@@ -2,3762 +2,2656 @@
 <html lang="kk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<title>Cyber Glide — Space Edition</title>
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1.0,
+      maximum-scale=1.0,
+      user-scalable=no,
+      viewport-fit=cover">
 
+<title>MULT архив — 2D анимация</title>
+<link rel="icon" type="image/png" href="images/icon.png">
 <style>
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:"Segoe UI",Arial,sans-serif;
-    user-select:none;
-    -webkit-user-select:none;
-    touch-action:manipulation;
+  box-sizing:border-box;
 }
 
-html,body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#020617;
-    color:white;
+html,
+body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#111;
+  font-family:Arial,Helvetica,sans-serif;
 }
 
 body{
-    display:flex;
-    justify-content:center;
-    align-items:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-/* =========================
-   НЕГІЗГІ КОНТЕЙНЕР
-========================= */
+/* ================================
+   НЕГІЗГІ ЭКРАН
+================================ */
 
-#game-container{
-    position:relative;
-    width:100%;
-    height:100%;
-    max-width:520px;
-    overflow:hidden;
-    background:#020617;
+#app{
+  position:relative;
+
+  width:100vw;
+  height:100dvh;
+
+  max-width:430px;
+  max-height:764px;
+
+  overflow:hidden;
+
+  background:#f7fbff;
+  color:#162033;
+
+  isolation:isolate;
 }
 
-/* =========================
-   CANVAS
-========================= */
-
-#gameCanvas{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    display:block;
-    background:#020617;
+/* Телефонның пропорциясын сақтау */
+@media(min-width:431px){
+  #app{
+    width:min(100vw,56.25vh);
+    height:min(100vh,177.777vw);
+  }
 }
 
-/* =========================
-   ЭКРАНДАР
-========================= */
+/* ================================
+   СЦЕНАЛАР
+================================ */
 
-.screen{
-    position:absolute;
-    inset:0;
-    display:none;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
-    text-align:center;
-    overflow:hidden;
+.scene{
+  position:absolute;
+  inset:0;
 
-    background-size:cover;
-    background-position:center;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 
-    z-index:20;
+  padding:
+    max(72px,8vh)
+    clamp(15px,5vw,25px)
+    max(78px,10vh);
+
+  opacity:0;
+
+  transform:
+    translateX(35px)
+    scale(.98);
+
+  pointer-events:none;
+
+  transition:
+    opacity .45s ease,
+    transform .55s ease;
+
+  overflow:hidden;
 }
 
-.screen.active{
-    display:flex;
+.scene.active{
+  opacity:1;
+  transform:none;
+  pointer-events:auto;
 }
 
-.screen::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:
-        radial-gradient(circle at center,rgba(0,255,255,.08),transparent 50%),
-        rgba(0,0,10,.76);
-    z-index:-1;
+/* Сценаның ішіндегі негізгі контент */
+.scene > div:not(.bg):not(.logo){
+  max-width:100%;
 }
 
-/* Фон суреттері */
+/* ================================
+   ФОН
+================================ */
 
-#welcome-screen,
-#login-screen,
-#register-screen{
-    background-image:url("image/2.jpeg");
+.bg{
+  position:absolute;
+  inset:0;
+
+  overflow:hidden;
+
+  background:
+    linear-gradient(
+      160deg,
+      #eef8ff,
+      #fff 55%,
+      #f7f0ff
+    );
+
+  z-index:-2;
 }
 
-#loading-screen{
-    background-image:url("image/3.jpeg");
+.blob{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(1px);
+  opacity:.65;
 }
 
-#lobby-screen,
-#profile-screen,
-#shop-screen,
-#leaderboard-screen,
-#settings-screen,
-#mode-screen{
-    background-image:url("image/1.jpeg");
+.b1{
+  width:clamp(130px,44vw,190px);
+  height:clamp(130px,44vw,190px);
+  background:#bceeff;
+  top:-60px;
+  right:-55px;
 }
 
-/* =========================
-   TEXT
-========================= */
-
-h1,h2,h3{
-    text-transform:uppercase;
-    letter-spacing:2px;
+.b2{
+  width:clamp(110px,35vw,150px);
+  height:clamp(110px,35vw,150px);
+  background:#e5d1ff;
+  bottom:-45px;
+  left:-55px;
 }
 
-.neon{
-    color:#fff;
-    text-shadow:
-        0 0 5px #00ffff,
-        0 0 15px #00ffff,
-        0 0 30px #00ffff;
-}
-
-.pink{
-    color:#fff;
-    text-shadow:
-        0 0 5px #ff00ff,
-        0 0 15px #ff00ff,
-        0 0 30px #ff00ff;
-}
-
-.gold{
-    color:#fff;
-    text-shadow:
-        0 0 5px #ffd700,
-        0 0 15px #ffd700,
-        0 0 30px #ffd700;
-}
+/* ================================
+   LOGO
+================================ */
 
 .logo{
-    font-size:42px;
-    line-height:1;
-    margin-bottom:15px;
+  position:absolute;
+
+  top:
+    max(18px,env(safe-area-inset-top));
+
+  left:clamp(15px,5.5vw,24px);
+
+  font-weight:900;
+
+  font-size:clamp(16px,5vw,20px);
+
+  color:#6750e8;
+
+  letter-spacing:-1px;
+
+  z-index:10;
 }
 
-.subtitle{
-    color:#cbd5e1;
-    margin-bottom:30px;
+/* ================================
+   МӘТІН
+================================ */
+
+h1{
+  font-size:clamp(25px,8vw,35px);
+  line-height:1.06;
+
+  margin:
+    clamp(10px,3vw,15px)
+    0
+    clamp(7px,2vw,10px);
+
+  letter-spacing:-1px;
+
+  overflow-wrap:anywhere;
 }
 
-/* =========================
-   INPUT
-========================= */
+h2{
+  font-size:clamp(20px,6.4vw,26px);
+  line-height:1.12;
 
-input{
-    width:85%;
-    max-width:320px;
-    padding:15px;
-    margin:7px;
-    border-radius:12px;
+  margin:
+    clamp(9px,3vw,12px)
+    0;
 
-    background:rgba(0,0,0,.65);
-    color:white;
+  letter-spacing:-.5px;
 
-    border:2px solid #00ffff;
-
-    outline:none;
-    text-align:center;
-    font-size:16px;
-
-    box-shadow:
-        0 0 10px rgba(0,255,255,.2);
+  overflow-wrap:anywhere;
 }
 
-input:focus{
-    box-shadow:
-        0 0 15px #00ffff;
+p{
+  font-size:clamp(13px,4vw,15px);
+  line-height:1.48;
+
+  margin:7px 0;
+
+  color:#566174;
+
+  overflow-wrap:anywhere;
 }
 
-/* =========================
-   BUTTONS
-========================= */
-
-.btn{
-    width:85%;
-    max-width:320px;
-
-    padding:14px 20px;
-    margin:7px;
-
-    border-radius:12px;
-
-    background:rgba(0,0,0,.65);
-
-    color:#00ffff;
-    border:2px solid #00ffff;
-
-    font-size:16px;
-    font-weight:800;
-
-    text-transform:uppercase;
-
-    cursor:pointer;
-
-    box-shadow:
-        0 0 10px rgba(0,255,255,.35) inset,
-        0 0 10px rgba(0,255,255,.2);
-
-    transition:.15s;
+small{
+  font-size:clamp(10px,3vw,13px);
+  line-height:1.4;
 }
 
-.btn:hover{
-    background:rgba(0,255,255,.12);
+.highlight{color:#6750e8}
+.pink{color:#ec5a9a}
+.green{color:#16a477}
+
+.center{
+  text-align:center;
+  align-items:center;
 }
 
-.btn:active{
-    transform:scale(.95);
-    background:#00ffff;
-    color:#001018;
+.sub{
+  font-size:clamp(11px,3.5vw,13px);
+  color:#687489;
+  line-height:1.45;
 }
 
-.btn-pink{
-    color:#ff00ff;
-    border-color:#ff00ff;
-    box-shadow:0 0 10px rgba(255,0,255,.35) inset;
+/* ================================
+   BADGE
+================================ */
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  gap:6px;
+
+  background:#fff;
+
+  border:1px solid #e5eaf4;
+
+  border-radius:999px;
+
+  padding:
+    clamp(6px,2vw,8px)
+    clamp(9px,3vw,12px);
+
+  font-size:clamp(9px,3vw,11px);
+
+  font-weight:800;
+
+  box-shadow:0 8px 22px #243b5312;
+
+  max-width:100%;
+
+  text-align:center;
+
+  overflow-wrap:anywhere;
 }
 
-.btn-pink:active{
-    background:#ff00ff;
-    color:#000;
+/* ================================
+   CARD / UI
+================================ */
+
+.ui{
+  background:#fff;
+
+  border:1px solid #e4eaf3;
+
+  border-radius:
+    clamp(14px,5vw,20px);
+
+  box-shadow:
+    0 16px 45px #243b5318;
+
+  max-width:100%;
 }
 
-.btn-gold{
-    color:#ffd700;
-    border-color:#ffd700;
-    box-shadow:0 0 10px rgba(255,215,0,.35) inset;
+/* ================================
+   BROWSER
+================================ */
+
+.browser{
+  width:100%;
+
+  padding:clamp(7px,2.5vw,10px);
+
+  margin-top:
+    clamp(10px,4vw,20px);
 }
 
-.btn-gold:active{
-    background:#ffd700;
-    color:#000;
+.dots{
+  display:flex;
+  gap:5px;
+  margin-bottom:9px;
 }
 
-.btn-green{
-    color:#00ff88;
-    border-color:#00ff88;
+.dot{
+  width:7px;
+  height:7px;
+
+  border-radius:50%;
+
+  background:#dce2ec;
 }
 
-.btn-gray{
-    color:#aaa;
-    border-color:#555;
-    box-shadow:none;
+.screen{
+  width:100%;
+
+  height:clamp(100px,35vw,145px);
+
+  border-radius:
+    clamp(10px,3vw,13px);
+
+  background:
+    linear-gradient(
+      135deg,
+      #7559ef,
+      #62c9ef
+    );
+
+  padding:13px;
+
+  position:relative;
+
+  overflow:hidden;
 }
 
-/* =========================
-   TOP STATS
-========================= */
+.screen:after{
+  content:"";
 
-.top-stats{
-    position:absolute;
-    top:15px;
-    left:0;
-    width:100%;
+  position:absolute;
 
-    display:flex;
-    justify-content:space-around;
+  width:clamp(80px,28vw,110px);
+  height:clamp(80px,28vw,110px);
 
-    z-index:30;
+  border-radius:50%;
+
+  right:-25px;
+  bottom:-30px;
+
+  background:#fff3;
+
+  animation:
+    float 3s infinite ease-in-out;
 }
 
-.stat{
-    background:rgba(0,0,0,.7);
-    border:1px solid #00ffff;
-    padding:9px 15px;
-    border-radius:12px;
-    font-weight:bold;
+.play{
+  position:absolute;
+
+  left:50%;
+  top:50%;
+
+  transform:translate(-50%,-50%);
+
+  width:clamp(38px,12vw,44px);
+  height:clamp(38px,12vw,44px);
+
+  border-radius:50%;
+
+  background:#fff;
+
+  display:grid;
+  place-items:center;
+
+  color:#6750e8;
+
+  font-size:clamp(15px,5vw,18px);
+
+  box-shadow:0 8px 20px #0002;
 }
 
-/* =========================
-   LOADER
-========================= */
+/* ================================
+   AI
+================================ */
 
-.loader{
-    width:80%;
-    max-width:350px;
-    height:20px;
+.ai{
+  width:clamp(90px,30vw,120px);
+  height:clamp(110px,36vw,145px);
 
-    border:2px solid #00ffff;
-    border-radius:20px;
+  position:relative;
 
-    overflow:hidden;
+  margin:
+    0
+    auto
+    clamp(5px,2vw,8px);
+
+  animation:
+    float 2.7s infinite ease-in-out;
+
+  transform-origin:center;
 }
 
-.loader-bar{
-    width:0%;
-    height:100%;
+.ai .body{
+  position:absolute;
 
-    background:#00ffff;
+  width:65%;
+  height:57%;
 
-    box-shadow:
-        0 0 15px #00ffff;
+  left:17.5%;
+  bottom:3.5%;
+
+  border-radius:
+    42px 42px
+    30px 30px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #7258ee,
+      #4e8ff3
+    );
+
+  box-shadow:
+    inset 0 -8px #4d6fe0;
 }
 
-/* =========================
-   SHOP
-========================= */
+.ai .head{
+  position:absolute;
 
-.shop-grid{
-    width:95%;
-    max-width:430px;
+  width:77%;
+  height:52%;
 
-    display:grid;
-    grid-template-columns:1fr 1fr;
+  left:11.5%;
+  top:3%;
 
-    gap:10px;
+  border-radius:44px;
 
-    max-height:55vh;
-    overflow-y:auto;
+  background:#fff;
 
-    padding:5px;
+  border:
+    clamp(3px,.9vw,5px)
+    solid #6655e8;
+
+  box-shadow:
+    0 8px 20px #243b5320;
 }
 
-.shop-item{
-    background:rgba(0,0,0,.8);
+.eye{
+  position:absolute;
 
-    border:1px solid #00ffff;
+  width:9px;
+  height:13px;
 
-    border-radius:14px;
+  border-radius:50%;
 
-    padding:12px;
+  background:#25304a;
 
-    text-align:center;
+  top:36%;
 }
 
-.shop-item img{
-    width:65px;
-    height:65px;
-    border-radius:50%;
-    margin-bottom:7px;
+.e1{left:29%}
+.e2{right:29%}
+
+.mouth{
+  position:absolute;
+
+  width:27%;
+  height:11px;
+
+  border-bottom:4px solid #ec5a9a;
+
+  border-radius:
+    0 0 18px 18px;
+
+  left:36%;
+  top:60%;
 }
 
-.color-box{
-    width:60px;
-    height:60px;
-    border-radius:12px;
+.antenna{
+  position:absolute;
 
-    border:2px solid white;
+  width:4px;
+  height:19px;
 
-    margin:0 auto 8px;
+  background:#6655e8;
+
+  left:37%;
+  top:-14%;
+
+  z-index:2;
 }
 
-/* =========================
-   LIST
-========================= */
+.antenna:after{
+  content:"";
 
-.list{
-    width:95%;
-    max-width:430px;
+  position:absolute;
 
-    max-height:58vh;
+  width:10px;
+  height:10px;
 
-    overflow-y:auto;
+  border-radius:50%;
 
-    background:rgba(0,0,0,.7);
+  background:#ffcc5c;
 
-    border:1px solid #00ffff;
-    border-radius:14px;
-
-    padding:8px;
+  left:-3px;
+  top:-5px;
 }
 
-.list-item{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
+.arm{
+  position:absolute;
 
-    padding:10px;
+  width:29%;
+  height:9%;
 
-    border-bottom:1px solid rgba(0,255,255,.2);
+  border-radius:20px;
 
-    cursor:pointer;
+  background:#596fe5;
+
+  top:52%;
 }
 
-.avatar{
-    width:45px;
-    height:45px;
-
-    border-radius:50%;
-
-    border:2px solid #00ffff;
-
-    object-fit:cover;
-
-    background:#111;
+.a1{
+  left:1%;
+  transform:rotate(25deg);
 }
 
-/* =========================
-   GAME HUD
-========================= */
+.a2{
+  right:1%;
 
-#game-ui{
-    position:absolute;
+  transform:rotate(-42deg);
 
-    top:12px;
-    left:10px;
-    right:10px;
-
-    display:none;
-
-    justify-content:space-between;
-
-    z-index:40;
-
-    pointer-events:none;
+  transform-origin:left;
 }
 
-.game-stat{
-    background:rgba(0,0,0,.65);
-
-    padding:8px 12px;
-
-    border-radius:12px;
-
-    border:1px solid rgba(0,255,255,.4);
-
-    font-weight:bold;
+.wave{
+  animation:wave .65s infinite alternate;
 }
 
-/* =========================
-   MOBILE CONTROL
-========================= */
+/* ================================
+   POSTERS
+================================ */
 
-#mobile-controls{
-    position:absolute;
+.posters{
+  display:grid;
 
-    left:0;
-    bottom:15px;
+  grid-template-columns:
+    repeat(3,minmax(0,1fr));
 
-    width:100%;
+  gap:clamp(5px,2vw,8px);
 
-    display:none;
+  margin-top:
+    clamp(10px,4vw,14px);
 
-    justify-content:space-around;
-
-    z-index:45;
+  width:100%;
 }
 
-.touch-btn{
-    width:65px;
-    height:65px;
+.p{
+  width:100%;
 
-    border-radius:50%;
+  height:
+    clamp(55px,20vw,72px);
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  border-radius:
+    clamp(8px,3vw,12px);
 
-    background:rgba(15,23,42,.75);
+  background:
+    linear-gradient(
+      145deg,
+      #ffd35f,
+      #ff729e
+    );
 
-    border:2px solid #00ffff;
-
-    color:white;
-
-    font-size:25px;
-
-    box-shadow:0 0 15px rgba(0,255,255,.3);
+  animation:
+    poster .8s both;
 }
 
-.touch-btn:active{
-    background:#00ffff;
-    color:#000;
+.p:nth-child(2){
+  background:
+    linear-gradient(
+      145deg,
+      #69d6ff,
+      #735de7
+    );
+  animation-delay:.1s;
 }
 
-/* =========================
-   GAME OVER
-========================= */
-
-#gameOver{
-    position:absolute;
-
-    left:50%;
-    top:50%;
-
-    transform:translate(-50%,-50%);
-
-    width:85%;
-    max-width:360px;
-
-    padding:25px;
-
-    background:rgba(0,0,0,.92);
-
-    border:2px solid #00ffff;
-
-    border-radius:18px;
-
-    box-shadow:0 0 30px #00ffff;
-
-    display:none;
-    flex-direction:column;
-    align-items:center;
-
-    z-index:60;
+.p:nth-child(3){
+  background:
+    linear-gradient(
+      145deg,
+      #a7e67c,
+      #43b6da
+    );
+  animation-delay:.2s;
 }
 
-/* =========================
-   PAUSE
-========================= */
-
-#pauseButton{
-    position:absolute;
-
-    top:60px;
-    right:12px;
-
-    z-index:50;
-
-    display:none;
-
-    padding:8px 12px;
-
-    border-radius:10px;
-
-    background:rgba(0,0,0,.7);
-
-    color:#00ffff;
-
-    border:1px solid #00ffff;
+.p:nth-child(4){
+  background:
+    linear-gradient(
+      145deg,
+      #ff9f71,
+      #e65fbb
+    );
+  animation-delay:.3s;
 }
 
-/* =========================
+.p:nth-child(5){
+  background:
+    linear-gradient(
+      145deg,
+      #72e3cf,
+      #5983ec
+    );
+  animation-delay:.4s;
+}
+
+.p:nth-child(6){
+  background:
+    linear-gradient(
+      145deg,
+      #ffd86c,
+      #72c7ff
+    );
+  animation-delay:.5s;
+}
+
+/* ================================
+   COUNTER
+================================ */
+
+.counter{
+  font-size:clamp(42px,15vw,54px);
+
+  font-weight:900;
+
+  color:#6750e8;
+
+  text-align:center;
+
+  margin:5px 0;
+}
+
+.arrow{
+  text-align:center;
+
+  font-size:
+    clamp(22px,8vw,27px);
+
+  color:#8792a7;
+}
+
+/* ================================
+   PEOPLE
+================================ */
+
+.people{
+  height:
+    clamp(75px,29vw,110px);
+
+  display:flex;
+
+  justify-content:center;
+  align-items:center;
+
+  gap:4px;
+
+  flex-wrap:wrap;
+
+  margin:
+    clamp(8px,3vw,14px)
+    0;
+
+  overflow:hidden;
+}
+
+.person{
+  font-size:
+    clamp(16px,6vw,24px);
+
+  animation:
+    pop .35s both;
+}
+
+/* ================================
+   STEPS
+================================ */
+
+.steps{
+  width:100%;
+
+  margin-top:
+    clamp(9px,3vw,14px);
+}
+
+.step{
+  display:flex;
+
+  align-items:center;
+
+  gap:9px;
+
+  background:#fff;
+
+  border:1px solid #e6ebf3;
+
+  border-radius:
+    clamp(10px,3.5vw,13px);
+
+  padding:
+    clamp(7px,2.5vw,9px);
+
+  margin:
+    6px 0;
+
+  font-size:
+    clamp(10px,3.5vw,12px);
+
+  line-height:1.3;
+
+  box-shadow:
+    0 6px 15px #243b5308;
+
+  animation:
+    slidein .5s both;
+}
+
+.num{
+  min-width:
+    clamp(23px,8vw,26px);
+
+  height:
+    clamp(23px,8vw,26px);
+
+  border-radius:50%;
+
+  display:grid;
+  place-items:center;
+
+  background:#6750e8;
+
+  color:white;
+
+  font-weight:bold;
+
+  flex-shrink:0;
+}
+
+/* ================================
+   GROUPS
+================================ */
+
+.groups{
+  display:grid;
+
+  grid-template-columns:
+    repeat(2,minmax(0,1fr));
+
+  gap:
+    clamp(6px,3vw,10px);
+
+  margin-top:
+    clamp(10px,4vw,16px);
+}
+
+.group{
+  padding:
+    clamp(9px,3.5vw,14px)
+    clamp(6px,2.5vw,10px);
+
+  text-align:center;
+
+  border-radius:
+    clamp(12px,4vw,16px);
+
+  background:#fff;
+
+  border:1px solid #e6ebf3;
+
+  box-shadow:
+    0 10px 22px #243b5310;
+
+  font-size:
+    clamp(9px,3vw,11px);
+
+  line-height:1.35;
+
+  overflow-wrap:anywhere;
+}
+
+.icon{
+  font-size:
+    clamp(23px,8vw,30px);
+
+  margin-bottom:7px;
+}
+
+/* ================================
+   CODE
+================================ */
+
+.code{
+  width:100%;
+
+  height:
+    clamp(90px,29vw,115px);
+
+  border-radius:
+    clamp(12px,4vw,16px);
+
+  background:#20273a;
+
+  color:#dce5ff;
+
+  padding:
+    clamp(9px,3vw,13px);
+
+  font:
+    clamp(8px,2.8vw,10px)
+    monospace;
+
+  box-shadow:
+    0 15px 30px #243b5320;
+
+  overflow:hidden;
+
+  text-align:left;
+}
+
+.line{
+  margin:5px 0;
+  white-space:nowrap;
+}
+
+.cursor{
+  display:inline-block;
+
+  width:5px;
+  height:11px;
+
+  background:#7de2c1;
+
+  animation:
+    blink .7s infinite;
+}
+
+/* ================================
+   LIVE
+================================ */
+
+.live{
+  display:inline-flex;
+
+  align-items:center;
+
+  gap:7px;
+
+  background:#171b2b;
+
+  color:white;
+
+  border-radius:999px;
+
+  padding:
+    7px
+    clamp(9px,3vw,13px);
+
+  font-weight:800;
+
+  font-size:
+    clamp(10px,3.5vw,12px);
+}
+
+.live i{
+  width:8px;
+  height:8px;
+
+  background:#ff4d6d;
+
+  border-radius:50%;
+
+  animation:
+    blink .7s infinite;
+}
+
+/* ================================
+   FINAL
+================================ */
+
+.final{
+  background:
+    linear-gradient(
+      145deg,
+      #5c4be8,
+      #8a67ef 50%,
+      #5ac8ec
+    );
+
+  color:#fff;
+}
+
+.final .logo{
+  color:#fff;
+}
+
+.final p{
+  color:#edf0ff;
+}
+
+.final .ui{
+  background:#ffffff18;
+  border-color:#ffffff30;
+  color:#fff;
+}
+
+.final h1{
+  font-size:
+    clamp(29px,9vw,39px);
+}
+
+/* ================================
+   DEMO BUTTONS
+================================ */
+
+.demoBtn,
+.registerBtn{
+  border:0;
+
+  border-radius:999px;
+
+  padding:
+    clamp(9px,3vw,11px)
+    clamp(11px,4vw,15px);
+
+  margin-top:8px;
+
+  font-weight:800;
+
+  cursor:pointer;
+
+  width:100%;
+
+  font-size:
+    clamp(11px,3.5vw,14px);
+
+  min-height:42px;
+}
+
+.demoBtn{
+  background:#fff;
+  color:#6750e8;
+}
+
+.registerBtn{
+  background:#ff4d5f;
+  color:#fff;
+
+  box-shadow:
+    0 8px 20px #0002;
+}
+
+/* ================================
+   PROGRESS
+================================ */
+
+.progress{
+  position:absolute;
+
+  left:12px;
+  right:12px;
+
+  bottom:
+    max(10px,env(safe-area-inset-bottom));
+
+  height:3px;
+
+  background:#ffffff55;
+
+  border-radius:9px;
+
+  z-index:20;
+}
+
+.bar{
+  height:100%;
+  width:0;
+
+  background:#fff;
+
+  border-radius:9px;
+}
+
+/* ================================
+   CONTROL
+================================ */
+
+.controls{
+  position:absolute;
+
+  left:50%;
+
+  bottom:
+    max(18px,calc(env(safe-area-inset-bottom) + 15px));
+
+  transform:translateX(-50%);
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  gap:5px;
+
+  z-index:50;
+
+  width:
+    calc(100% - 20px);
+
+  max-width:410px;
+}
+
+.controls button{
+  border:0;
+
+  background:#fff;
+
+  color:#222;
+
+  padding:
+    8px
+    clamp(7px,2.2vw,11px);
+
+  border-radius:999px;
+
+  font-weight:700;
+
+  box-shadow:
+    0 7px 20px #0003;
+
+  cursor:pointer;
+
+  font-size:
+    clamp(8px,2.7vw,11px);
+
+  min-height:34px;
+
+  white-space:nowrap;
+
+  flex:1;
+
+  min-width:0;
+}
+
+.controls button:active{
+  transform:scale(.94);
+}
+
+/* ================================
+   MUSIC
+================================ */
+
+.musicBtn{
+  position:absolute;
+
+  top:
+    max(15px,env(safe-area-inset-top));
+
+  right:
+    clamp(10px,4vw,18px);
+
+  z-index:50;
+
+  border:0;
+
+  background:#fff;
+
+  color:#222;
+
+  padding:
+    7px
+    clamp(8px,3vw,11px);
+
+  border-radius:999px;
+
+  font-weight:700;
+
+  font-size:
+    clamp(8px,2.8vw,10px);
+
+  box-shadow:
+    0 7px 20px #0003;
+
+  cursor:pointer;
+
+  max-width:125px;
+}
+
+/* ================================
    MODAL
-========================= */
-
-.overlay{
-    position:absolute;
-    inset:0;
-
-    background:rgba(0,0,0,.8);
-
-    display:none;
-
-    z-index:90;
-}
+================================ */
 
 .modal{
-    position:absolute;
+  position:absolute;
 
-    left:50%;
-    top:50%;
+  inset:0;
 
-    transform:translate(-50%,-50%);
+  background:
+    rgba(35,0,0,.72);
 
-    width:85%;
-    max-width:350px;
+  backdrop-filter:blur(5px);
 
-    background:#080b15;
+  display:flex;
 
-    border:2px solid #00ffff;
+  align-items:center;
+  justify-content:center;
 
-    border-radius:18px;
+  padding:
+    clamp(15px,5vw,22px);
 
-    padding:22px;
+  z-index:100;
 
-    text-align:center;
+  opacity:0;
 
-    display:none;
+  visibility:hidden;
 
-    z-index:100;
+  pointer-events:none;
 
-    box-shadow:0 0 30px #00ffff;
+  transition:.25s ease;
 }
 
-/* =========================
-   ERROR
-========================= */
+.modal.show{
+  opacity:1;
 
-.error{
-    color:#ff4444;
-    margin:5px;
-    min-height:20px;
-    font-size:14px;
+  visibility:visible;
+
+  pointer-events:auto;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
+.modalCard{
+  width:100%;
+
+  max-width:350px;
+
+  max-height:
+    calc(100% - 20px);
+
+  overflow:auto;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ff263f,
+      #d90024
+    );
+
+  color:#fff;
+
+  border-radius:
+    clamp(18px,6vw,24px);
+
+  padding:
+    clamp(17px,5vw,25px)
+    clamp(14px,5vw,20px);
+
+  text-align:center;
+
+  box-shadow:
+    0 25px 70px #0008;
+
+  transform:
+    scale(.85)
+    translateY(20px);
+
+  transition:.3s ease;
+
+  border:
+    2px solid #ff7080;
+}
+
+.modal.show .modalCard{
+  transform:
+    scale(1)
+    translateY(0);
+}
+
+.modalIcon{
+  width:
+    clamp(50px,16vw,62px);
+
+  height:
+    clamp(50px,16vw,62px);
+
+  margin:
+    0 auto 8px;
+
+  border-radius:50%;
+
+  background:#fff;
+
+  display:grid;
+
+  place-items:center;
+
+  font-size:
+    clamp(24px,8vw,30px);
+}
+
+.modalCard h2{
+  margin:8px 0 10px;
+  color:#fff;
+}
+
+.modalCard p{
+  color:#fff;
+
+  font-size:
+    clamp(12px,4vw,15px);
+}
+
+.dateBox{
+  background:#a9001c;
+
+  border:
+    1px solid #ff7b89;
+
+  border-radius:15px;
+
+  padding:
+    clamp(10px,3.5vw,13px);
+
+  margin:
+    clamp(10px,4vw,15px)
+    0;
+
+  line-height:1.6;
+
+  font-size:
+    clamp(11px,3.5vw,14px);
+}
+
+.modalSmall{
+  font-size:
+    clamp(10px,3vw,12px)!important;
+
+  opacity:.95;
+}
+
+.modalCard button{
+  width:100%;
+
+  border:0;
+
+  border-radius:999px;
+
+  padding:12px;
+
+  background:#fff;
+
+  color:#d90024;
+
+  font-weight:900;
+
+  cursor:pointer;
+
+  margin-top:5px;
+
+  min-height:42px;
+}
+
+/* ================================
+   АНИМАЦИЯ
+================================ */
+
+@keyframes pop{
+  from{
+    opacity:0;
+    transform:scale(.5);
+  }
+
+  to{
+    opacity:1;
+    transform:scale(1);
+  }
+}
+
+@keyframes poster{
+  from{
+    opacity:0;
+    transform:
+      translateY(20px)
+      scale(.9);
+  }
+
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+@keyframes slidein{
+  from{
+    opacity:0;
+    transform:translateX(-25px);
+  }
+
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+@keyframes float{
+  50%{
+    transform:translateY(-7px);
+  }
+}
+
+@keyframes wave{
+  to{
+    transform:rotate(-65deg);
+  }
+}
+
+@keyframes blink{
+  50%{
+    opacity:.25;
+  }
+}
+
+/* ================================
+   ӨТЕ КІШКЕНТАЙ ТЕЛЕФОН
+   320px және одан төмен
+================================ */
+
+@media(max-width:340px){
+
+  .scene{
+    padding:
+      65px
+      13px
+      73px;
+  }
+
+  h1{
+    font-size:24px;
+    letter-spacing:-.6px;
+  }
+
+  h2{
+    font-size:19px;
+    letter-spacing:-.3px;
+  }
+
+  p{
+    font-size:12px;
+  }
+
+  .badge{
+    font-size:8px;
+    padding:6px 8px;
+  }
+
+  .ai{
+    transform:scale(.82);
+    margin-top:-8px;
+    margin-bottom:-12px;
+  }
+
+  .screen{
+    height:92px;
+  }
+
+  .posters{
+    gap:5px;
+  }
+
+  .p{
+    height:48px;
+  }
+
+  .people{
+    height:72px;
+  }
+
+  .person{
+    font-size:15px;
+  }
+
+  .step{
+    font-size:9px;
+    padding:6px;
+    gap:6px;
+    margin:4px 0;
+  }
+
+  .num{
+    min-width:21px;
+    height:21px;
+    font-size:9px;
+  }
+
+  .group{
+    font-size:8px;
+    padding:8px 5px;
+  }
+
+  .icon{
+    font-size:21px;
+  }
+
+  .counter{
+    font-size:40px;
+  }
+
+  .controls{
+    gap:3px;
+    width:calc(100% - 12px);
+  }
+
+  .controls button{
+    padding:6px 4px;
+    font-size:7px;
+    min-height:30px;
+  }
+
+  .musicBtn{
+    font-size:7px;
+    padding:6px 7px;
+  }
+
+  .final h1{
+    font-size:25px;
+  }
+
+  .final .ui{
+    padding:10px!important;
+  }
+
+  .demoBtn,
+  .registerBtn{
+    min-height:38px;
+    font-size:10px;
+  }
+}
+
+/* ================================
+   ӨТЕ ТӨМЕН ЭКРАН
+================================ */
 
 @media(max-height:650px){
-    .logo{
-        font-size:34px;
-    }
 
-    .btn{
-        padding:11px;
-        margin:4px;
-    }
+  .scene{
+    padding-top:62px;
+    padding-bottom:72px;
+  }
 
-    .shop-grid{
-        max-height:45vh;
-    }
+  h1{
+    font-size:
+      clamp(23px,7vw,30px);
+  }
+
+  h2{
+    font-size:
+      clamp(18px,5.8vw,23px);
+  }
+
+  .ai{
+    transform:scale(.78);
+    margin-top:-15px;
+    margin-bottom:-18px;
+  }
+
+  .screen{
+    height:95px;
+  }
+
+  .people{
+    height:65px;
+  }
+
+  .posters .p{
+    height:48px;
+  }
+
+  .controls{
+    bottom:
+      max(8px,calc(env(safe-area-inset-bottom) + 5px));
+  }
+
+  .controls button{
+    min-height:29px;
+    padding:6px 5px;
+  }
+}
+
+/* ================================
+   ЛАНДШАФТ
+================================ */
+
+@media(max-height:500px) and (orientation:landscape){
+
+  #app{
+    max-width:none;
+    max-height:none;
+
+    width:100vw;
+    height:100dvh;
+  }
+
+  .scene{
+    padding:
+      35px
+      clamp(15px,5vw,35px)
+      45px;
+  }
+
+  .ai{
+    transform:scale(.55);
+    margin-top:-35px;
+    margin-bottom:-40px;
+  }
+
+  h1{
+    font-size:23px;
+  }
+
+  h2{
+    font-size:19px;
+  }
+
+  p{
+    font-size:11px;
+  }
+
+  .posters .p{
+    height:40px;
+  }
+
+  .screen{
+    height:70px;
+  }
+
+  .controls{
+    bottom:5px;
+  }
+
+  .controls button{
+    min-height:27px;
+    font-size:8px;
+  }
+}
+
+/* ================================
+   ҚОЛЖЕТІМДІЛІК
+================================ */
+
+@media(prefers-reduced-motion:reduce){
+
+  .scene{
+    transition:none;
+  }
+
+  *,
+  *::before,
+  *::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div id="game-container">
+<div id="app">
 
-<canvas id="gameCanvas"></canvas>
-
-<!-- ================= GAME HUD ================= -->
-
-<div id="game-ui">
-
-    <div class="game-stat">
-        🏆 <span id="gameScore">0</span>
-    </div>
-
-    <div class="game-stat">
-        🪙 <span id="gameCoins">0</span>
-    </div>
-
-    <div class="game-stat">
-        ❤️ <span id="gameLives">3</span>
-    </div>
-
+<div class="progress">
+  <div class="bar" id="bar"></div>
 </div>
 
-<button id="pauseButton" onclick="togglePause()">⏸</button>
+<section class="scene active" data-time="4">
 
-<!-- ================= MOBILE ================= -->
-
-<div id="mobile-controls">
-
-    <div class="touch-btn" id="leftBtn">◀</div>
-
-    <div class="touch-btn" id="fireBtn">🔥</div>
-
-    <div class="touch-btn" id="rightBtn">▶</div>
-
+<div class="bg">
+  <i class="blob b1"></i>
+  <i class="blob b2"></i>
 </div>
 
-<!-- ================= WELCOME ================= -->
+<div class="logo">MULT архив</div>
 
-<section id="welcome-screen" class="screen active">
+<div class="center" style="z-index:2">
 
-    <h1 class="logo neon">
-        CYBER<br>GLIDE
-    </h1>
+<div class="ai">
+  <div class="antenna"></div>
 
-    <p class="subtitle">
-        🚀 SPACE EDITION
-    </p>
+  <div class="head">
+    <span class="eye e1"></span>
+    <span class="eye e2"></span>
+    <span class="mouth"></span>
+  </div>
 
-    <button class="btn" onclick="showScreen('login-screen')">
-        Кіру
-    </button>
+  <div class="body"></div>
 
-    <button class="btn btn-pink" onclick="showScreen('register-screen')">
-        Жаңа аккаунт
-    </button>
-
-</section>
-
-<!-- ================= LOGIN ================= -->
-
-<section id="login-screen" class="screen">
-
-    <h2 class="neon">КІРУ</h2>
-
-    <input id="loginUser" type="text" placeholder="Логин">
-
-    <input id="loginPass" type="password" placeholder="Құпия сөз">
-
-    <div id="loginError" class="error"></div>
-
-    <button class="btn" onclick="login()">
-        КІРУ
-    </button>
-
-    <button class="btn btn-gray" onclick="showScreen('welcome-screen')">
-        АРТҚА
-    </button>
-
-</section>
-
-<!-- ================= REGISTER ================= -->
-
-<section id="register-screen" class="screen">
-
-    <h2 class="pink">ТІРКЕЛУ</h2>
-
-    <input id="regUser" type="text" placeholder="Жаңа логин">
-
-    <input id="regPass" type="password" placeholder="Құпия сөз">
-
-    <div id="registerError" class="error"></div>
-
-    <button class="btn btn-pink" onclick="register()">
-        ТІРКЕЛУ
-    </button>
-
-    <button class="btn btn-gray" onclick="showScreen('welcome-screen')">
-        АРТҚА
-    </button>
-
-</section>
-
-<!-- ================= LOADING ================= -->
-
-<section id="loading-screen" class="screen">
-
-    <h2 class="neon" id="loadingText">
-        ҒАРЫШ ДАЙЫНДАЛУДА...
-    </h2>
-
-    <div class="loader">
-        <div class="loader-bar" id="loaderBar"></div>
-    </div>
-
-    <p style="margin-top:15px;color:#aaa;">
-        CYBER GLIDE ENGINE
-    </p>
-
-</section>
-
-<!-- ================= LOBBY ================= -->
-
-<section id="lobby-screen" class="screen">
-
-    <div class="top-stats">
-
-        <div class="stat neon">
-            🏆 <span id="lobbyScore">0</span>
-        </div>
-
-        <div class="stat gold">
-            🪙 <span id="lobbyCoins">0</span>
-        </div>
-
-    </div>
-
-    <h1 class="logo neon" style="font-size:34px;margin-top:45px;">
-        CYBER GLIDE
-    </h1>
-
-    <p id="welcomePlayer" style="color:#aaa;margin-bottom:20px;">
-        PLAYER
-    </p>
-
-    <button class="btn" onclick="showScreen('mode-screen')">
-        🚀 ОЙЫНДЫ БАСТАУ
-    </button>
-
-    <button class="btn btn-gold" onclick="openShop()">
-        🛒 ДҮКЕН
-    </button>
-
-    <button class="btn" onclick="openLeaderboard()">
-        🏆 ЛИДЕРЛЕР
-    </button>
-
-    <button class="btn btn-pink" onclick="openProfile()">
-        👤 ПРОФИЛЬ
-    </button>
-
-    <button class="btn btn-gray" onclick="showScreen('settings-screen')">
-        ⚙️ БАПТАУЛАР
-    </button>
-
-</section>
-
-<!-- ================= MODE ================= -->
-
-<section id="mode-screen" class="screen">
-
-    <h2 class="neon">РЕЖИМ ТАҢДАУ</h2>
-
-    <p style="color:#aaa;margin-bottom:20px;">
-        Қай режимде ойнайсыз?
-    </p>
-
-    <button class="btn btn-pink" onclick="startLoadingGame('ranked')">
-        🏆 RANKED
-    </button>
-
-    <button class="btn" onclick="startLoadingGame('classic')">
-        🚀 CLASSIC
-    </button>
-
-    <button class="btn btn-gray" onclick="showScreen('lobby-screen')">
-        АРТҚА
-    </button>
-
-</section>
-
-<!-- ================= SHOP ================= -->
-
-<section id="shop-screen" class="screen">
-
-    <h2 class="gold">🛒 ДҮКЕН</h2>
-
-    <p style="margin-bottom:10px;">
-        Монета:
-        <span id="shopCoins" class="gold">0</span> 🪙
-    </p>
-
-    <div style="display:flex;gap:5px;margin-bottom:10px;">
-
-        <button class="btn" style="width:140px;padding:10px"
-                onclick="renderShop('avatars')">
-            🤖 АВАТАР
-        </button>
-
-        <button class="btn btn-pink" style="width:140px;padding:10px"
-                onclick="renderShop('outfits')">
-            🚀 КЕМЕ
-        </button>
-
-    </div>
-
-    <div class="shop-grid" id="shopGrid"></div>
-
-    <button class="btn btn-gray" onclick="showScreen('lobby-screen')">
-        ЛОББИ
-    </button>
-
-</section>
-
-<!-- ================= PROFILE ================= -->
-
-<section id="profile-screen" class="screen">
-
-    <h2 class="pink">👤 ПРОФИЛЬ</h2>
-
-    <img id="myAvatar" class="avatar"
-         style="width:100px;height:100px">
-
-    <h3 id="myName" style="margin:10px">
-        PLAYER
-    </h3>
-
-    <p>
-        🏆 Рейтинг:
-        <span id="myScore" class="neon">0</span>
-    </p>
-
-    <p>
-        🪙 Монета:
-        <span id="myCoins" class="gold">0</span>
-    </p>
-
-    <p>
-        ❤️ Лайк:
-        <span id="myLikes">0</span>
-    </p>
-
-    <p style="font-size:12px;color:#888;margin-top:10px">
-        Тіркелген:
-        <span id="myRegDate"></span>
-    </p>
-
-    <button class="btn" onclick="changeAvatar()">
-        🖼️ АВАТАР АУЫСТЫРУ
-    </button>
-
-    <button class="btn btn-pink" onclick="changeOutfit()">
-        🚀 КЕМЕ ТҮСІН АУЫСТЫРУ
-    </button>
-
-    <button class="btn btn-gray" onclick="showScreen('lobby-screen')">
-        АРТҚА
-    </button>
-
-</section>
-
-<!-- ================= LEADERBOARD ================= -->
-
-<section id="leaderboard-screen" class="screen">
-
-    <h2 class="neon">
-        🏆 ТОП ОЙЫНШЫЛАР
-    </h2>
-
-    <div class="list" id="leaderboardList"></div>
-
-    <button class="btn" style="margin-top:15px"
-            onclick="showScreen('lobby-screen')">
-        ЛОББИ
-    </button>
-
-</section>
-
-<!-- ================= SETTINGS ================= -->
-
-<section id="settings-screen" class="screen">
-
-    <h2 class="neon">
-        ⚙️ БАПТАУЛАР
-    </h2>
-
-    <button class="btn" id="musicButton"
-            onclick="toggleMusic()">
-        🎵 ӘУЕН: ҚОСУЛЫ
-    </button>
-
-    <button class="btn"
-            id="sfxButton"
-            onclick="toggleSFX()">
-        🔊 ДЫБЫС: ҚОСУЛЫ
-    </button>
-
-    <button class="btn btn-pink"
-            style="margin-top:30px"
-            onclick="logout()">
-        🚪 АККАУНТТАН ШЫҒУ
-    </button>
-
-    <button class="btn btn-gray"
-            onclick="showScreen('lobby-screen')">
-        АРТҚА
-    </button>
-
-</section>
-
-<!-- ================= GAME OVER ================= -->
-
-<div id="gameOver">
-
-    <h2 class="neon">
-        💥 ОЙЫН АЯҚТАЛДЫ
-    </h2>
-
-    <p style="margin:8px">
-        Ұпай:
-        <b id="finalScore" class="neon">0</b>
-    </p>
-
-    <p style="margin:8px">
-        Монета:
-        <b id="finalCoins" class="gold">0</b>
-    </p>
-
-    <p style="margin:8px">
-        Режим:
-        <b id="finalMode">CLASSIC</b>
-    </p>
-
-    <button class="btn" onclick="restartGame()">
-        🔄 ҚАЙТА ОЙНАУ
-    </button>
-
-    <button class="btn btn-gray" onclick="returnLobby()">
-        🏠 ЛОББИ
-    </button>
-
+  <div class="arm a1"></div>
+  <div class="arm a2 wave"></div>
 </div>
 
-<!-- ================= PLAYER MODAL ================= -->
+<div class="badge">🤖 AI КӨМЕКШІ</div>
 
-<div class="overlay" id="overlay"
-     onclick="closePlayerModal()"></div>
+<h1>
+Сәлем, MULT архив көрермені!
+</h1>
 
-<div class="modal" id="playerModal">
+<p>
+Мен сіздің
+<b class="highlight">AI көмекшіңізбін.</b><br>
+Қазір сайтқа қалай кіруге болатынын түсіндіремін.
+</p>
 
-    <img id="modalAvatar"
-         class="avatar"
-         style="width:85px;height:85px">
+</div>
+</section>
 
-    <h2 id="modalName" class="neon">
-        PLAYER
-    </h2>
 
-    <p>
-        🏆 <span id="modalScore">0</span>
-    </p>
+<section class="scene" data-time="5">
 
-    <p>
-        ❤️ <span id="modalLikes">0</span>
-    </p>
+<div class="bg">
+  <i class="blob b1"></i>
+  <i class="blob b2"></i>
+</div>
 
-    <button class="btn btn-pink"
-            onclick="likePlayer()">
-        ❤️ ЛАЙК
-    </button>
+<div class="logo">MULT архив</div>
 
-    <button class="btn btn-gray"
-            onclick="closePlayerModal()">
-        ЖАБУ
-    </button>
+<div style="z-index:2">
+
+<div class="badge">🎬 КІРІСПЕ</div>
+
+<h1>
+«MULT архив сайтына қалай кіреміз?»
+</h1>
+
+<p>
+Және неге кейбір қолданушылар кіре алмай қалды?
+</p>
+
+<div class="browser ui">
+
+<div class="dots">
+  <i class="dot"></i>
+  <i class="dot"></i>
+  <i class="dot"></i>
+</div>
+
+<div class="screen">
+  <div class="play">▶</div>
+</div>
 
 </div>
 
 </div>
+</section>
+
+
+<section class="scene" data-time="5">
+
+<div class="bg"></div>
+
+<div class="logo">MULT архив</div>
+
+<div style="z-index:2">
+
+<div class="badge">
+🎯 ЖОБАНЫҢ МАҚСАТЫ
+</div>
+
+<h2>
+MULT архив — мультфильмдер мен фильмдер көруге арналған жоба.
+</h2>
+
+<div class="posters">
+
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+
+</div>
+
+<p style="margin-top:15px">
+🔎 Іздеу &nbsp; • &nbsp;
+▶ Видео &nbsp; • &nbsp;
+⭐ Архив
+</p>
+
+</div>
+</section>
+
+
+<section class="scene" data-time="5">
+
+<div class="bg"></div>
+
+<div class="logo">MULT архив</div>
+
+<div style="z-index:2;text-align:center">
+
+<div class="badge">
+📢 DEMO НҰСҚАСЫ
+</div>
+
+<h2>
+Бұған дейін сайттың DEMO нұсқасына тіркелуге шақырған едім.
+</h2>
+
+<div class="counter" id="c57">0</div>
+
+<p>
+<b>адамға</b> логин мен құпия сөз берілді
+</p>
+
+</div>
+</section>
+
+
+<section class="scene" data-time="5">
+
+<div class="bg"></div>
+
+<div class="logo">MULT архив</div>
+
+<div style="z-index:2;text-align:center">
+
+<div class="badge">
+📊 НЕ БОЛДЫ?
+</div>
+
+<div class="people" id="people"></div>
+
+<h2>
+Бірақ 57 адамның ішінен
+<span class="highlight">39 адам</span>
+ғана сайтқа кірді.
+</h2>
+
+<div class="arrow">↓</div>
+
+<p>
+Қалған қолданушылар сайтқа кіре алмай қалды.
+</p>
+
+</div>
+</section>
+
+
+<section class="scene" data-time="4">
+
+<div class="bg"></div>
+
+<div class="logo">MULT архив</div>
+
+<div style="z-index:2;text-align:center">
+
+<div class="badge">
+🛡️ МОДЕРАТОРЛАР
+</div>
+
+<div class="counter" id="c19">0</div>
+
+<p>
+<b>модератор</b> сайтқа қосылды.
+</p>
+
+<div class="ui" style="padding:15px;margin-top:15px">
+
+👨‍💻 👩‍💻 👨‍💻
+
+<br>
+
+<small>
+Олар сайтты тексеріп, мультфильмдер мен фильмдерді реттеуге көмектеседі.
+</small>
+
+</div>
+
+</div>
+</section>
+
+
+<section class="scene" data-time="7">
+
+<div class="bg"></div>
+
+<div class="logo">MULT архив</div>
+
+<div style="z-index:2">
+
+<div class="badge">
+🔐 САЙТҚА ҚАЛАЙ КІРЕМІЗ?
+</div>
+
+<h2>
+5 қарапайым қадам
+</h2>
+
+<div class="steps">
+
+<div class="step">
+<span class="num">1</span>
+Сайтқа кіріңіз
+</div>
+
+<div class="step">
+<span class="num">2</span>
+Кіру / Login батырмасын басыңыз
+</div>
+
+<div class="step">
+<span class="num">3</span>
+Берілген логинді енгізіңіз
+</div>
+
+<div class="step">
+<span class="num">4</span>
+Құпия сөзді енгізіңіз
+</div>
+
+<div class="step">
+<span class="num">5</span>
+Сайтқа кіріп, мультфильмді таңдаңыз 🎬
+</div>
+
+</div>
+
+</div>
+</section>
+
+
+<section class="scene" data-time="5">
+
+<div class="bg"></div>
+
+<div class="logo">MULT архив</div>
+
+<div style="z-index:2;text-align:center">
+
+<div class="badge">
+👥 КІМДЕР КІРЕ АЛАДЫ?
+</div>
+
+<div class="groups">
+
+<div class="group">
+
+<div class="icon">🔑</div>
+
+<b>
+Логин + құпия сөз алғандар
+</b>
+
+<br>
+
+<span class="green">
+✓ Сайтқа кіре алады
+</span>
+
+</div>
+
+
+<div class="group">
+
+<div class="icon">🚪</div>
+
+<b>
+Қазір тіркелмегендер
+</b>
+
+<br>
+
+<span class="pink">
+✕ DEMO-ға кіре алмайды
+</span>
+
+</div>
+
+</div>
+
+<p style="margin-top:16px">
+Бұл — уақытша
+<b>DEMO нұсқасының шектеуі.</b>
+</p>
+
+</div>
+</section>
+
+
+<section class="scene" data-time="5">
+
+<div class="bg"></div>
+
+<div class="logo">MULT архив</div>
+
+<div style="z-index:2;text-align:center">
+
+<div class="ai"
+style="transform:scale(.72);margin-bottom:-12px">
+
+<div class="antenna"></div>
+
+<div class="head">
+<span class="eye e1"></span>
+<span class="eye e2"></span>
+<span class="mouth"></span>
+</div>
+
+<div class="body"></div>
+
+<div class="arm a1"></div>
+<div class="arm a2 wave"></div>
+
+</div>
+
+<h2>
+Кіре алмай қалғандар,
+<span class="pink">
+мұңаймаңыздар ❤️
+</span>
+</h2>
+
+<p>
+Сайт әлі толық дайын емес.
+</p>
+
+<div class="code">
+
+<div class="line">
+const multArchive = "building";
+</div>
+
+<div class="line">
+createWebsite();
+</div>
+
+<div class="line">
+addCartoons();
+<span class="cursor"></span>
+</div>
+
+</div>
+
+<p>
+<b>
+Мен бұл жобаны жалғыз өзім жасап жатырмын.
+</b>
+</p>
+
+</div>
+</section>
+
+
+<section class="scene" data-time="5">
+
+<div class="bg"></div>
+
+<div class="logo">MULT архив</div>
+
+<div style="z-index:2">
+
+<div class="badge">
+🚀 ЖАҢАЛЫҚТАР
+</div>
+
+<h2>
+Қазір сайтқа тағы да мультфильмдер мен фильмдер қосып жатырмын!
+</h2>
+
+<div class="posters">
+
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+<div class="p"></div>
+
+</div>
+
+<p style="margin-top:15px">
+
+<b>
+Толық нұсқасы дайын болғанда, барлығыңыз кіре аласыздар!
+</b>
+
+</p>
+
+</div>
+</section>
+
+
+<section class="scene" data-time="4">
+
+<div class="bg"></div>
+
+<div class="logo">MULT архив</div>
+
+<div class="center" style="z-index:2">
+
+<div class="live">
+<i></i> LIVE
+</div>
+
+<h1>
+Айтпақшы, кеше тікелей эфир де болды 👀
+</h1>
+
+<p>
+Сайттың дамуын бірге бақылап отырыңыздар!
+</p>
+
+<div class="browser ui">
+
+<div class="dots">
+<i class="dot"></i>
+<i class="dot"></i>
+<i class="dot"></i>
+</div>
+
+<div class="screen">
+<div class="play">▶</div>
+</div>
+
+</div>
+
+</div>
+</section>
+
+
+<section class="scene final" data-time="8">
+
+<div class="logo">
+MULT архив
+</div>
+
+<div class="center" style="z-index:2">
+
+<div style="font-size:58px;animation:float 2s infinite">
+🚀
+</div>
+
+<h1>
+Бұл — тек бастамасы!
+</h1>
+
+<p>
+Жаңа мультфильмдер • жаңа фильмдер • жаңа мүмкіндіктер
+</p>
+
+<div class="ui"
+style="padding:15px;margin-top:12px;width:100%">
+
+<b>
+❤️ MULT архивке қосылыңыздар
+</b>
+
+<br>
+
+<small>
+Толық нұсқасы жақында...
+</small>
+
+</div>
+
+<div style="
+margin-top:14px;
+font-size:14px;
+font-weight:900;
+">
+
+🎬 Бұл — менің сайтымның DEMO версиясы
+
+</div>
+
+<button
+class="demoBtn"
+onclick="window.open('https://bossinteliq00.github.io/OrderPro/','_blank')">
+
+🌐 DEMO версиясын ашу
+
+</button>
+
+<button
+class="registerBtn"
+onclick="showRegister()">
+
+📝 DEMO версияға тіркелу
+
+</button>
+
+</div>
+</section>
+
+
+<!-- ҚЫЗЫЛ ТІРКЕЛУ ТЕРЕЗЕСІ -->
+
+<div class="modal" id="registerModal">
+
+<div class="modalCard">
+
+<div class="modalIcon">
+⏰
+</div>
+
+<h2>
+Тіркелуге кешігіп қалдыңыз
+</h2>
+
+<p>
+DEMO версиясына тіркелу уақыты аяқталды.
+</p>
+
+<div class="dateBox">
+
+<b>
+Тіркелу уақыты:
+</b>
+
+<br>
+
+14.08.2026 06:00
+
+<br>
+
+—
+
+<br>
+
+16.08.2026 06:00
+
+</div>
+
+<p class="modalSmall">
+Келесі тіркелу ашылған кезде міндетті түрде хабарлаймыз ❤️
+</p>
+
+<button onclick="closeRegister()">
+Түсіндім
+</button>
+
+</div>
+</div>
+
+
+<button
+class="musicBtn"
+id="musicBtn">
+
+🔊 Әуенді өшіру
+
+</button>
+
+
+<div class="controls">
+
+<button id="back">
+◀ Артқа
+</button>
+
+<button id="skip">
+⏩ Пропустить
+</button>
+
+<button id="pause">
+Ⅱ Пауза
+</button>
+
+<button id="next">
+Келесі ▶
+</button>
+
+<button id="restart">
+↻
+</button>
+
+</div>
+
+</div>
+
 
 <script>
 
-/* ==========================================================
-   DATABASE
-========================================================== */
-
-let db = {};
-
-try{
-    db = JSON.parse(localStorage.getItem("cyberGlideDB") || "{}");
-}catch(e){
-    db = {};
-}
-
-let currentUser = null;
-
-function saveDB(){
-    localStorage.setItem(
-        "cyberGlideDB",
-        JSON.stringify(db)
-    );
-}
-
-/* ==========================================================
-   SHOP
-========================================================== */
-
-const SHOP = {
-
-    avatars:[
-        {
-            id:"av1",
-            name:"Starter",
-            src:"https://api.dicebear.com/7.x/bottts/svg?seed=Starter",
-            price:0
-        },
-        {
-            id:"av2",
-            name:"Neon",
-            src:"https://api.dicebear.com/7.x/bottts/svg?seed=Neon",
-            price:50
-        },
-        {
-            id:"av3",
-            name:"Cyber",
-            src:"https://api.dicebear.com/7.x/bottts/svg?seed=Cyber",
-            price:100
-        },
-        {
-            id:"av4",
-            name:"Boss",
-            src:"https://api.dicebear.com/7.x/bottts/svg?seed=Boss",
-            price:500
-        }
-    ],
-
-    outfits:[
-        {
-            id:"out1",
-            name:"CYAN",
-            color:"#00ffff",
-            price:0
-        },
-        {
-            id:"out2",
-            name:"PINK",
-            color:"#ff00ff",
-            price:50
-        },
-        {
-            id:"out3",
-            name:"GREEN",
-            color:"#00ff66",
-            price:100
-        },
-        {
-            id:"out4",
-            name:"GOLD",
-            color:"#ffd700",
-            price:300
-        }
-    ]
-
-};
-
-/* ==========================================================
-   AUDIO ENGINE
-========================================================== */
-
-const AudioEngine = {
-
-    ctx:null,
-    musicTimer:null,
-    musicIndex:0,
-
-    notes:[
-        261.63,
-        329.63,
-        392,
-        523.25,
-        440,
-        349.23
-    ],
-
-    init(){
-
-        if(!this.ctx){
-
-            const AC =
-                window.AudioContext ||
-                window.webkitAudioContext;
-
-            if(!AC) return;
-
-            this.ctx = new AC();
-        }
-
-        if(this.ctx.state === "suspended"){
-            this.ctx.resume();
-        }
-
-    },
-
-    tone(freq,type,duration,volume){
-
-        if(!settings.sfx) return;
-
-        this.init();
-
-        if(!this.ctx) return;
-
-        try{
-
-            const osc =
-                this.ctx.createOscillator();
-
-            const gain =
-                this.ctx.createGain();
-
-            osc.type = type;
-
-            osc.frequency.setValueAtTime(
-                freq,
-                this.ctx.currentTime
-            );
-
-            gain.gain.setValueAtTime(
-                volume,
-                this.ctx.currentTime
-            );
-
-            gain.gain.exponentialRampToValueAtTime(
-                0.0001,
-                this.ctx.currentTime + duration
-            );
-
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-
-            osc.start();
-
-            osc.stop(
-                this.ctx.currentTime + duration
-            );
-
-        }catch(e){}
-
-    },
-
-    click(){
-        this.tone(700,"square",.07,.05);
-    },
-
-    coin(){
-        this.tone(880,"sine",.12,.08);
-        setTimeout(()=>{
-            this.tone(1200,"sine",.12,.06);
-        },70);
-    },
-
-    laser(){
-        this.tone(880,"square",.08,.06);
-    },
-
-    explosion(){
-
-        this.tone(
-            100,
-            "sawtooth",
-            .3,
-            .12
-        );
-
-    },
-
-    startMusic(){
-
-        if(!settings.music) return;
-
-        this.init();
-
-        if(this.musicTimer) return;
-
-        this.musicTimer =
-            setInterval(()=>{
-
-                if(!settings.music){
-                    this.stopMusic();
-                    return;
-                }
-
-                const f =
-                    this.notes[
-                        this.musicIndex %
-                        this.notes.length
-                    ];
-
-                this.musicIndex++;
-
-                /*
-                 * Музыка ішкі синтезатор арқылы.
-                 * Сыртқы MP3 қажет емес.
-                 */
-
-                if(this.ctx){
-
-                    const osc =
-                        this.ctx.createOscillator();
-
-                    const gain =
-                        this.ctx.createGain();
-
-                    osc.type = "triangle";
-
-                    osc.frequency.value = f;
-
-                    gain.gain.value = .025;
-
-                    gain.gain.exponentialRampToValueAtTime(
-                        .0001,
-                        this.ctx.currentTime + .25
-                    );
-
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-
-                    osc.start();
-
-                    osc.stop(
-                        this.ctx.currentTime + .25
-                    );
-
-                }
-
-            },320);
-
-    },
-
-    stopMusic(){
-
-        if(this.musicTimer){
-
-            clearInterval(
-                this.musicTimer
-            );
-
-            this.musicTimer = null;
-        }
-
-    }
-
-};
-
-/* ==========================================================
-   SETTINGS
-========================================================== */
-
-const settings = {
-
-    music:
-        localStorage.getItem("cg_music")
-        !== "false",
-
-    sfx:
-        localStorage.getItem("cg_sfx")
-        !== "false"
-
-};
-
-function updateSettings(){
-
-    const music =
-        document.getElementById("musicButton");
-
-    const sfx =
-        document.getElementById("sfxButton");
-
-    music.innerText =
-        "🎵 ӘУЕН: " +
-        (settings.music ?
-        "ҚОСУЛЫ" :
-        "ӨШІРУЛІ");
-
-    sfx.innerText =
-        "🔊 ДЫБЫС: " +
-        (settings.sfx ?
-        "ҚОСУЛЫ" :
-        "ӨШІРУЛІ");
-
-}
-
-function toggleMusic(){
-
-    settings.music =
-        !settings.music;
-
-    localStorage.setItem(
-        "cg_music",
-        settings.music
-    );
-
-    if(settings.music){
-
-        AudioEngine.startMusic();
-
-    }else{
-
-        AudioEngine.stopMusic();
-
-    }
-
-    updateSettings();
-
-}
-
-function toggleSFX(){
-
-    settings.sfx =
-        !settings.sfx;
-
-    localStorage.setItem(
-        "cg_sfx",
-        settings.sfx
-    );
-
-    if(settings.sfx){
-
-        AudioEngine.coin();
-
-    }
-
-    updateSettings();
-
-}
-
-/* ==========================================================
-   SCREEN
-========================================================== */
-
-function showScreen(id){
-
-    document
-        .querySelectorAll(".screen")
-        .forEach(s=>{
-            s.classList.remove("active");
-        });
-
-    const screen =
-        document.getElementById(id);
-
-    if(screen){
-        screen.classList.add("active");
-    }
-
-    if(
-        settings.music &&
-        id !== "game-screen"
-    ){
-        AudioEngine.startMusic();
-    }
-
-}
-
-/* ==========================================================
-   REGISTER
-========================================================== */
-
-function register(){
-
-    const user =
-        document
-        .getElementById("regUser")
-        .value
-        .trim();
-
-    const pass =
-        document
-        .getElementById("regPass")
-        .value
-        .trim();
-
-    const error =
-        document.getElementById(
-            "registerError"
-        );
-
-    error.innerText="";
-
-    if(user.length < 3){
-
-        error.innerText =
-            "Логин кемінде 3 таңба болуы керек.";
-
-        return;
-
-    }
-
-    if(pass.length < 3){
-
-        error.innerText =
-            "Құпия сөз кемінде 3 таңба болуы керек.";
-
-        return;
-
-    }
-
-    if(db[user]){
-
-        error.innerText =
-            "Бұл логин бұрын тіркелген.";
-
-        return;
-
-    }
-
-    const now =
-        new Date();
-
-    db[user] = {
-
-        password:pass,
-
-        score:0,
-
-        coins:0,
-
-        likes:0,
-
-        currentAvatar:"av1",
-
-        currentOutfit:"out1",
-
-        unlockedAvatars:["av1"],
-
-        unlockedOutfits:["out1"],
-
-        regDate:
-            now.toLocaleDateString(
-                "kk-KZ"
-            ) +
-            " " +
-            now.toLocaleTimeString(
-                "kk-KZ"
-            )
-
-    };
-
-    saveDB();
-
-    loginSuccess(user);
-
-}
-
-/* ==========================================================
-   LOGIN
-========================================================== */
-
-function login(){
-
-    const user =
-        document
-        .getElementById("loginUser")
-        .value
-        .trim();
-
-    const pass =
-        document
-        .getElementById("loginPass")
-        .value
-        .trim();
-
-    const error =
-        document.getElementById(
-            "loginError"
-        );
-
-    error.innerText="";
-
-    if(!db[user]){
-
-        error.innerText =
-            "Аккаунт табылмады.";
-
-        return;
-
-    }
-
-    if(db[user].password !== pass){
-
-        error.innerText =
-            "Құпия сөз қате.";
-
-        return;
-
-    }
-
-    loginSuccess(user);
-
-}
-
-function loginSuccess(username){
-
-    currentUser =
-        db[username];
-
-    localStorage.setItem(
-        "cyberGlideCurrentUser",
-        username
-    );
-
-    updateLobby();
-
-    loading(
-        "lobby-screen"
-    );
-
-}
-
-/* ==========================================================
-   LOGOUT
-========================================================== */
-
-function logout(){
-
-    if(gameState === "PLAYING"){
-        stopGame();
-    }
-
-    AudioEngine.stopMusic();
-
-    localStorage.removeItem(
-        "cyberGlideCurrentUser"
-    );
-
-    currentUser=null;
-
-    showScreen(
-        "welcome-screen"
-    );
-
-}
-
-/* ==========================================================
-   LOADING
-========================================================== */
-
-let loadingTimer=null;
-
-function loading(target, onComplete=null){
-
-    showScreen(
-        "loading-screen"
-    );
-
-    const bar =
-        document.getElementById(
-            "loaderBar"
-        );
-
-    const text =
-        document.getElementById(
-            "loadingText"
-        );
-
-    let progress=0;
-
-    if(loadingTimer){
-        clearInterval(loadingTimer);
-    }
-
-    bar.style.width="0%";
-    text.innerText="ҒАРЫШ ДАЙЫНДАЛУДА...";
-
-    /*
-     * ДӘЛ 10 СЕКУНДТЫҚ ЖҮКТЕЛУ:
-     * 100 қадам × 100 мс = 10 000 мс.
-     * Жолақ біртіндеп 0%-дан 100%-ға дейін толады.
-     */
-    loadingTimer =
-        setInterval(()=>{
-
-            progress += 1;
-
-            bar.style.width =
-                progress+"%";
-
-            if(progress>=20 && progress<40)
-                text.innerText =
-                    "🌌 ҒАРЫШ КАРТАСЫ ЖҮКТЕЛУДЕ...";
-
-            if(progress>=40 && progress<65)
-                text.innerText =
-                    "🚀 КЕМЕ ЖҮЙЕСІ ДАЙЫНДАЛУДА...";
-
-            if(progress>=65 && progress<85)
-                text.innerText =
-                    "⚡ ҚОЗҒАЛТҚЫШ ЖҮЙЕСІ...";
-
-            if(progress>=85 && progress<100)
-                text.innerText =
-                    "🔥 ҚАРУ ЖҮЙЕСІ ҚОСЫЛУДА...";
-
-            if(progress>=100){
-
-                clearInterval(
-                    loadingTimer
-                );
-
-                loadingTimer=null;
-
-                text.innerText="✅ ДАЙЫН!";
-
-                setTimeout(()=>{
-                    if(typeof onComplete === "function"){
-                        onComplete();
-                    }else if(target){
-                        showScreen(target);
-                    }
-                },120);
-
-            }
-
-        },100);
-
-}
-
-/* ==========================================================
-   LOBBY
-========================================================== */
-
-function updateLobby(){
-
-    if(!currentUser) return;
-
-    document.getElementById(
-        "lobbyScore"
-    ).innerText =
-        currentUser.score;
-
-    document.getElementById(
-        "lobbyCoins"
-    ).innerText =
-        currentUser.coins;
-
-    document.getElementById(
-        "welcomePlayer"
-    ).innerText =
-        "PLAYER: " +
-        localStorage.getItem(
-            "cyberGlideCurrentUser"
-        );
-
-}
-
-/* ==========================================================
-   PROFILE
-========================================================== */
-
-function openProfile(){
-
-    if(!currentUser) return;
-
-    document.getElementById(
-        "myName"
-    ).innerText =
-        localStorage.getItem(
-            "cyberGlideCurrentUser"
-        );
-
-    document.getElementById(
-        "myScore"
-    ).innerText =
-        currentUser.score;
-
-    document.getElementById(
-        "myCoins"
-    ).innerText =
-        currentUser.coins;
-
-    document.getElementById(
-        "myLikes"
-    ).innerText =
-        currentUser.likes;
-
-    document.getElementById(
-        "myRegDate"
-    ).innerText =
-        currentUser.regDate;
-
-    const avatar =
-        SHOP.avatars.find(
-            a =>
-            a.id ===
-            currentUser.currentAvatar
-        );
-
-    document.getElementById(
-        "myAvatar"
-    ).src =
-        avatar ?
-        avatar.src :
-        SHOP.avatars[0].src;
-
-    showScreen(
-        "profile-screen"
-    );
-
-}
-
-function changeAvatar(){
-
-    const list =
-        currentUser.unlockedAvatars;
-
-    if(list.length===0) return;
-
-    let index =
-        list.indexOf(
-            currentUser.currentAvatar
-        );
-
-    index =
-        (index+1) %
-        list.length;
-
-    currentUser.currentAvatar =
-        list[index];
-
-    saveDB();
-
-    openProfile();
-
-}
-
-function changeOutfit(){
-
-    const list =
-        currentUser.unlockedOutfits;
-
-    if(list.length===0) return;
-
-    let index =
-        list.indexOf(
-            currentUser.currentOutfit
-        );
-
-    index =
-        (index+1) %
-        list.length;
-
-    currentUser.currentOutfit =
-        list[index];
-
-    saveDB();
-
-    openProfile();
-
-}
-
-/* ==========================================================
-   SHOP
-========================================================== */
-
-function openShop(){
-
-    document.getElementById(
-        "shopCoins"
-    ).innerText =
-        currentUser.coins;
-
-    renderShop("avatars");
-
-    showScreen(
-        "shop-screen"
-    );
-
-}
-
-function renderShop(type){
-
-    const grid =
-        document.getElementById(
-            "shopGrid"
-        );
-
-    grid.innerHTML="";
-
-    const items =
-        type==="avatars"
-        ?
-        SHOP.avatars
-        :
-        SHOP.outfits;
-
-    const unlocked =
-        type==="avatars"
-        ?
-        currentUser.unlockedAvatars
-        :
-        currentUser.unlockedOutfits;
-
-    items.forEach(item=>{
-
-        const owned =
-            unlocked.includes(
-                item.id
-            );
-
-        const div =
-            document.createElement(
-                "div"
-            );
-
-        div.className="shop-item";
-
-        let visual="";
-
-        if(type==="avatars"){
-
-            visual =
-                `<img src="${item.src}"
-                      alt="">`;
-
-        }else{
-
-            visual =
-                `<div class="color-box"
-                      style="background:${item.color}">
-                 </div>`;
-
-        }
-
-        let button="";
-
-        if(owned){
-
-            button =
-                `<div style="
-                    color:#00ff66;
-                    border:1px solid #00ff66;
-                    padding:6px;
-                    border-radius:8px;
-                ">
-                    ✓ АЛЫНҒАН
-                </div>`;
-
-        }else{
-
-            button =
-                `<button
-                    class="btn btn-gold"
-                    style="width:100%;padding:7px;margin:3px"
-                    onclick="
-                        buyItem(
-                            '${type}',
-                            '${item.id}',
-                            ${item.price}
-                        )
-                    ">
-                    ${item.price} 🪙
-                </button>`;
-
-        }
-
-        div.innerHTML =
-            visual +
-            `<p style="
-                font-size:13px;
-                margin-bottom:5px;
-            ">
-                ${item.name}
-            </p>` +
-            button;
-
-        grid.appendChild(
-            div
-        );
-
-    });
-
-}
-
-function buyItem(type,id,price){
-
-    if(currentUser.coins < price){
-
-        alert(
-            "🪙 Монета жеткіліксіз!"
-        );
-
-        return;
-
-    }
-
-    currentUser.coins -=
-        price;
-
-    if(type==="avatars"){
-
-        if(
-            !currentUser
-            .unlockedAvatars
-            .includes(id)
-        ){
-
-            currentUser
-                .unlockedAvatars
-                .push(id);
-
-        }
-
-    }else{
-
-        if(
-            !currentUser
-            .unlockedOutfits
-            .includes(id)
-        ){
-
-            currentUser
-                .unlockedOutfits
-                .push(id);
-
-        }
-
-    }
-
-    saveDB();
-
-    document.getElementById(
-        "shopCoins"
-    ).innerText =
-        currentUser.coins;
-
-    renderShop(type);
-
-    AudioEngine.coin();
-
-}
-
-/* ==========================================================
-   LEADERBOARD
-========================================================== */
-
-let viewingPlayer=null;
-
-function openLeaderboard(){
-
-    const list =
-        document.getElementById(
-            "leaderboardList"
-        );
-
-    list.innerHTML="";
-
-    const players =
-        Object.keys(db)
-        .map(username=>({
-
-            username,
-
-            ...db[username]
-
-        }))
-        .sort(
-            (a,b)=>
-                b.score-a.score
-        );
-
-    if(players.length===0){
-
-        list.innerHTML =
-            `<p style="padding:20px;color:#aaa">
-                Әзірге ойыншылар жоқ.
-             </p>`;
-
-    }
-
-    players.forEach(
-        (player,index)=>{
-
-            const avatar =
-                SHOP.avatars.find(
-                    a =>
-                    a.id ===
-                    player.currentAvatar
-                );
-
-            const item =
-                document.createElement(
-                    "div"
-                );
-
-            item.className =
-                "list-item";
-
-            item.innerHTML = `
-
-                <div style="
-                    display:flex;
-                    align-items:center;
-                    gap:8px
-                ">
-
-                    <b style="color:#00ffff">
-                        #${index+1}
-                    </b>
-
-                    <img
-                        class="avatar"
-                        style="
-                            width:38px;
-                            height:38px
-                        "
-                        src="${
-                            avatar ?
-                            avatar.src :
-                            SHOP.avatars[0].src
-                        }">
-
-                    <span>
-                        ${escapeHTML(
-                            player.username
-                        )}
-                    </span>
-
-                </div>
-
-                <b class="neon">
-                    ${player.score} 🏆
-                </b>
-            `;
-
-            item.onclick=()=>{
-
-                AudioEngine.click();
-
-                openPlayerModal(
-                    player
-                );
-
-            };
-
-            list.appendChild(
-                item
-            );
-
-        }
-    );
-
-    showScreen(
-        "leaderboard-screen"
-    );
-
-}
-
-function escapeHTML(text){
-
-    return String(text)
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
-
-}
-
-function openPlayerModal(player){
-
-    viewingPlayer =
-        player;
-
-    const avatar =
-        SHOP.avatars.find(
-            a =>
-            a.id ===
-            player.currentAvatar
-        );
-
-    document.getElementById(
-        "modalAvatar"
-    ).src =
-        avatar ?
-        avatar.src :
-        SHOP.avatars[0].src;
-
-    document.getElementById(
-        "modalName"
-    ).innerText =
-        player.username;
-
-    document.getElementById(
-        "modalScore"
-    ).innerText =
-        player.score;
-
-    document.getElementById(
-        "modalLikes"
-    ).innerText =
-        player.likes;
-
-    document.getElementById(
-        "overlay"
-    ).style.display="block";
-
-    document.getElementById(
-        "playerModal"
-    ).style.display="block";
-
-}
-
-function closePlayerModal(){
-
-    document.getElementById(
-        "overlay"
-    ).style.display="none";
-
-    document.getElementById(
-        "playerModal"
-    ).style.display="none";
-
-    viewingPlayer=null;
-
-}
-
-function likePlayer(){
-
-    if(!viewingPlayer)
-        return;
-
-    const myName =
-        localStorage.getItem(
-            "cyberGlideCurrentUser"
-        );
-
-    if(
-        viewingPlayer.username ===
-        myName
-    ){
-
-        alert(
-            "Өзіңізге лайк қоя алмайсыз."
-        );
-
-        return;
-
-    }
-
-    if(
-        !db[viewingPlayer.username]
-    ){
-
-        closePlayerModal();
-        return;
-
-    }
-
-    db[
-        viewingPlayer.username
-    ].likes++;
-
-    saveDB();
-
-    AudioEngine.coin();
-
-    alert(
-        "❤️ Лайк қойылды!"
-    );
-
-    closePlayerModal();
-
-    openLeaderboard();
-
-}
-
-/* ==========================================================
-   GAME ENGINE
-========================================================== */
-
-const canvas =
-    document.getElementById(
-        "gameCanvas"
-    );
-
-const ctx =
-    canvas.getContext("2d");
-
-let W=0;
-let H=0;
-
-function resizeCanvas(){
-
-    W =
-        document
-        .getElementById(
-            "game-container"
-        )
-        .clientWidth;
-
-    H =
-        document
-        .getElementById(
-            "game-container"
-        )
-        .clientHeight;
-
-    canvas.width=W;
-    canvas.height=H;
-
-    player.x =
-        Math.min(
-            Math.max(
-                player.x,
-                player.width
-            ),
-            W-player.width
-        );
-
-    player.y =
-        H-110;
-
-}
-
-window.addEventListener(
-    "resize",
-    resizeCanvas
-);
-
-/* ================= PLAYER ================= */
-
-const player={
-
-    x:0,
-
-    y:0,
-
-    width:38,
-
-    height:48,
-
-    speed:7,
-
-    left:false,
-
-    right:false
-
-};
-
-/* ================= GAME DATA ================= */
-
-let gameState="MENU";
-
-let gameMode="classic";
-
-let score=0;
-
-let coins=0;
-
-let lives=3;
-
-let bullets=[];
-
-let enemies=[];
-
-let coinObjects=[];
-
-let particles=[];
-
-let stars=[];
-
-let spawnTimer=0;
-
-let coinTimer=0;
-
-let animationId=null;
-
+const scenes=[
+  ...document.querySelectorAll('.scene')
+];
+
+const bar=
+document.getElementById('bar');
+
+let index=0;
+let elapsed=0;
 let paused=false;
-
-let difficulty=1;
-
-/* ==========================================================
-   STARS
-========================================================== */
-
-function createStars(){
-
-    stars=[];
-
-    for(
-        let i=0;
-        i<110;
-        i++
-    ){
-
-        stars.push({
-
-            x:Math.random()*W,
-
-            y:Math.random()*H,
-
-            r:
-                Math.random()*1.8+.3,
-
-            speed:
-                Math.random()*1.8+.4,
-
-            alpha:
-                Math.random()*.7+.2
-
-        });
-
-    }
-
-}
-
-function drawSpace(){
-
-    const gradient =
-        ctx.createLinearGradient(
-            0,
-            0,
-            0,
-            H
-        );
-
-    gradient.addColorStop(
-        0,
-        "#020617"
-    );
-
-    gradient.addColorStop(
-        .5,
-        "#081433"
-    );
-
-    gradient.addColorStop(
-        1,
-        "#01030a"
-    );
-
-    ctx.fillStyle =
-        gradient;
-
-    ctx.fillRect(
-        0,
-        0,
-        W,
-        H
-    );
-
-    for(
-        const star of stars
-    ){
-
-        star.y +=
-            star.speed;
-
-        if(
-            star.y>H
-        ){
-
-            star.y=0;
-
-            star.x=
-                Math.random()*W;
-
-        }
-
-        ctx.globalAlpha=
-            star.alpha;
-
-        ctx.fillStyle="#fff";
-
-        ctx.beginPath();
-
-        ctx.arc(
-            star.x,
-            star.y,
-            star.r,
-            0,
-            Math.PI*2
-        );
-
-        ctx.fill();
-
-    }
-
-    ctx.globalAlpha=1;
-
-}
-
-/* ==========================================================
-   PLAYER DRAW
-========================================================== */
-
-function drawPlayer(){
-
-    const outfit =
-        SHOP.outfits.find(
-            o =>
-            o.id ===
-            currentUser.currentOutfit
-        );
-
-    const color =
-        outfit ?
-        outfit.color :
-        "#00ffff";
-
-    ctx.save();
-
-    ctx.translate(
-        player.x,
-        player.y
-    );
-
-    ctx.shadowBlur=20;
-    ctx.shadowColor=color;
-
-    /* Engine fire */
-
-    const flame =
-        20 +
-        Math.random()*15;
-
-    ctx.fillStyle=
-        Math.random()>.5
-        ?
-        "#ff6600"
-        :
-        "#ffd700";
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        -7,
-        17
-    );
-
-    ctx.lineTo(
-        0,
-        20+flame
-    );
-
-    ctx.lineTo(
-        7,
-        17
-    );
-
-    ctx.closePath();
-
-    ctx.fill();
-
-    /* Wings */
-
-    ctx.fillStyle=
-        color;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        0,
-        -25
-    );
-
-    ctx.lineTo(
-        20,
-        20
-    );
-
-    ctx.lineTo(
-        5,
-        13
-    );
-
-    ctx.lineTo(
-        0,
-        22
-    );
-
-    ctx.lineTo(
-        -5,
-        13
-    );
-
-    ctx.lineTo(
-        -20,
-        20
-    );
-
-    ctx.closePath();
-
-    ctx.fill();
-
-    /* Cabin */
-
-    ctx.fillStyle="#fff";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        0,
-        -6,
-        5,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-    ctx.restore();
-
-}
-
-/* ==========================================================
-   BULLET
-========================================================== */
-
-function shoot(){
-
-    if(
-        gameState!=="PLAYING" ||
-        paused
-    )
-        return;
-
-    if(
-        bullets.length>8
-    )
-        return;
-
-    bullets.push({
-
-        x:player.x,
-
-        y:player.y-25,
-
-        speed:12
-
-    });
-
-    AudioEngine.laser();
-
-}
-
-/* ==========================================================
-   ENEMY
-========================================================== */
-
-function spawnEnemy(){
-
-    const radius =
-        Math.random()*13+14;
-
-    enemies.push({
-
-        x:
-            radius+
-            Math.random()*
-            (W-radius*2),
-
-        y:-40,
-
-        radius,
-
-        speed:
-            (Math.random()*1.8+2)
-            *difficulty,
-
-        rotation:
-            Math.random()*Math.PI*2
-
-    });
-
-}
-
-function spawnCoin(){
-
-    coinObjects.push({
-
-        x:
-            15+
-            Math.random()*
-            (W-30),
-
-        y:-30,
-
-        radius:11,
-
-        speed:
-            3+
-            difficulty*.3,
-
-        rotation:0
-
-    });
-
-}
-
-/* ==========================================================
-   METEOR DRAW
-========================================================== */
-
-function drawEnemy(enemy){
-
-    ctx.save();
-
-    ctx.translate(
-        enemy.x,
-        enemy.y
-    );
-
-    enemy.rotation+=.01;
-
-    ctx.rotate(
-        enemy.rotation
-    );
-
-    ctx.shadowBlur=15;
-    ctx.shadowColor="#ff0033";
-
-    ctx.fillStyle="#ef3340";
-
-    ctx.beginPath();
-
-    const r=
-        enemy.radius;
-
-    for(
-        let i=0;
-        i<8;
-        i++
-    ){
-
-        const angle=
-            (Math.PI*2/8)*i;
-
-        const rr=
-            r*
-            (
-                i%2===0
-                ?1
-                :.7
-            );
-
-        const x=
-            Math.cos(angle)*rr;
-
-        const y=
-            Math.sin(angle)*rr;
-
-        if(i===0)
-            ctx.moveTo(x,y);
-        else
-            ctx.lineTo(x,y);
-
-    }
-
-    ctx.closePath();
-
-    ctx.fill();
-
-    ctx.fillStyle="#991b1b";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        -4,
-        -3,
-        r*.35,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-    ctx.restore();
-
-}
-
-/* ==========================================================
-   COIN DRAW
-========================================================== */
-
-function drawCoin(c){
-
-    c.rotation+=.08;
-
-    ctx.save();
-
-    ctx.translate(
-        c.x,
-        c.y
-    );
-
-    ctx.scale(
-        Math.abs(
-            Math.cos(c.rotation)
-        ),
-        1
-    );
-
-    ctx.shadowBlur=18;
-    ctx.shadowColor="#ffd700";
-
-    ctx.fillStyle="#ffd700";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        0,
-        0,
-        c.radius,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-    ctx.fillStyle="#fff4a3";
-
-    ctx.font="bold 13px Arial";
-
-    ctx.textAlign="center";
-    ctx.textBaseline="middle";
-
-    ctx.fillText(
-        "₿",
-        0,
-        1
-    );
-
-    ctx.restore();
-
-}
-
-/* ==========================================================
-   PARTICLES
-========================================================== */
-
-function explosion(x,y,color="#ff3300"){
-
-    for(
-        let i=0;
-        i<18;
-        i++
-    ){
-
-        particles.push({
-
-            x,
-            y,
-
-            vx:
-                (Math.random()-.5)*7,
-
-            vy:
-                (Math.random()-.5)*7,
-
-            life:30+
-                Math.random()*20,
-
-            color
-
-        });
-
-    }
-
-}
-
-function drawParticles(){
-
-    for(
-        let i=particles.length-1;
-        i>=0;
-        i--
-    ){
-
-        const p=
-            particles[i];
-
-        p.x+=p.vx;
-        p.y+=p.vy;
-        p.vx*=.98;
-        p.vy*=.98;
-        p.life--;
-
-        ctx.globalAlpha=
-            Math.max(
-                0,
-                p.life/50
-            );
-
-        ctx.fillStyle=
-            p.color;
-
-        ctx.beginPath();
-
-        ctx.arc(
-            p.x,
-            p.y,
-            2.5,
-            0,
-            Math.PI*2
-        );
-
-        ctx.fill();
-
-        if(
-            p.life<=0
-        ){
-
-            particles.splice(
-                i,
-                1
-            );
-
-        }
-
-    }
-
-    ctx.globalAlpha=1;
-
-}
-
-/* ==========================================================
-   COLLISION
-========================================================== */
-
-function distance(a,b){
-
-    return Math.hypot(
-        a.x-b.x,
-        a.y-b.y
-    );
-
-}
-
-/* ==========================================================
-   UPDATE GAME
-========================================================== */
-
-function updateGame(){
-
-    if(
-        gameState!=="PLAYING" ||
-        paused
-    )
-        return;
-
-    /* PLAYER */
-
-    if(player.left){
-
-        player.x -=
-            player.speed;
-
-    }
-
-    if(player.right){
-
-        player.x +=
-            player.speed;
-
-    }
-
-    player.x=
-        Math.max(
-            player.width/2,
-            Math.min(
-                W-player.width/2,
-                player.x
-            )
-        );
-
-    /* BULLETS */
-
-    for(
-        let i=bullets.length-1;
-        i>=0;
-        i--
-    ){
-
-        bullets[i].y -=
-            bullets[i].speed;
-
-        if(
-            bullets[i].y < -30
-        ){
-
-            bullets.splice(
-                i,
-                1
-            );
-
-        }
-
-    }
-
-    /* DIFFICULTY */
-
-    difficulty =
-        1 +
-        Math.floor(score/100)*.12;
-
-    /* SPAWN ENEMIES */
-
-    spawnTimer++;
-
-    const interval =
-        Math.max(
-            18,
-            48 -
-            Math.floor(score/40)
-        );
-
-    if(
-        spawnTimer>=interval
-    ){
-
-        spawnTimer=0;
-
-        spawnEnemy();
-
-    }
-
-    /* COINS */
-
-    coinTimer++;
-
-    if(
-        coinTimer>=90
-    ){
-
-        coinTimer=0;
-
-        spawnCoin();
-
-    }
-
-    /* ENEMIES */
-
-    for(
-        let i=enemies.length-1;
-        i>=0;
-        i--
-    ){
-
-        const enemy =
-            enemies[i];
-
-        enemy.y +=
-            enemy.speed;
-
-        let destroyed=false;
-
-        /* Bullet collision */
-
-        for(
-            let j=bullets.length-1;
-            j>=0;
-            j--
-        ){
-
-            const bullet=
-                bullets[j];
-
-            if(
-                distance(
-                    enemy,
-                    bullet
-                ) <
-                enemy.radius+5
-            ){
-
-                explosion(
-                    enemy.x,
-                    enemy.y,
-                    "#ff4444"
-                );
-
-                enemies.splice(
-                    i,
-                    1
-                );
-
-                bullets.splice(
-                    j,
-                    1
-                );
-
-                score+=10;
-
-                AudioEngine.coin();
-
-                destroyed=true;
-
-                break;
-
-            }
-
-        }
-
-        if(destroyed)
-            continue;
-
-        /* Player collision */
-
-        if(
-            distance(
-                enemy,
-                player
-            ) <
-            enemy.radius+
-            player.width*.45
-        ){
-
-            explosion(
-                enemy.x,
-                enemy.y
-            );
-
-            enemies.splice(
-                i,
-                1
-            );
-
-            lives--;
-
-            AudioEngine.explosion();
-
-            updateHUD();
-
-            if(
-                lives<=0
-            ){
-
-                endGame();
-
-                return;
-
-            }
-
-            continue;
-
-        }
-
-        /* Out */
-
-        if(
-            enemy.y >
-            H+60
-        ){
-
-            enemies.splice(
-                i,
-                1
-            );
-
-            /*
-             * Қашып кеткен метеорит үшін
-             * Ranked режимінде аздап ұпай жоғалту жоқ.
-             */
-
-        }
-
-    }
-
-    /* COINS */
-
-    for(
-        let i=coinObjects.length-1;
-        i>=0;
-        i--
-    ){
-
-        const coin=
-            coinObjects[i];
-
-        coin.y +=
-            coin.speed;
-
-        if(
-            distance(
-                coin,
-                player
-            ) <
-            coin.radius+
-            player.width*.5
-        ){
-
-            coins++;
-
-            coinObjects.splice(
-                i,
-                1
-            );
-
-            AudioEngine.coin();
-
-            updateHUD();
-
-            continue;
-
-        }
-
-        if(
-            coin.y>H+40
-        ){
-
-            coinObjects.splice(
-                i,
-                1
-            );
-
-        }
-
-    }
-
-}
-
-/* ==========================================================
-   DRAW GAME
-========================================================== */
-
-function drawGame(){
-
-    drawSpace();
-
-    if(
-        gameState==="PLAYING" ||
-        gameState==="PAUSED"
-    ){
-
-        for(
-            const bullet of bullets
-        ){
-
-            ctx.shadowBlur=12;
-            ctx.shadowColor="#ffe600";
-
-            ctx.fillStyle="#ffe600";
-
-            ctx.fillRect(
-                bullet.x-2.5,
-                bullet.y,
-                5,
-                16
-            );
-
-        }
-
-        ctx.shadowBlur=0;
-
-        for(
-            const enemy of enemies
-        ){
-
-            drawEnemy(
-                enemy
-            );
-
-        }
-
-        for(
-            const coin of coinObjects
-        ){
-
-            drawCoin(
-                coin
-            );
-
-        }
-
-        drawParticles();
-
-        drawPlayer();
-
-    }
-
-    if(
-        gameState==="PAUSED"
-    ){
-
-        ctx.fillStyle=
-            "rgba(0,0,0,.55)";
-
-        ctx.fillRect(
-            0,
-            0,
-            W,
-            H
-        );
-
-        ctx.fillStyle="#fff";
-
-        ctx.font=
-            "bold 34px Segoe UI";
-
-        ctx.textAlign="center";
-
-        ctx.fillText(
-            "PAUSE",
-            W/2,
-            H/2
-        );
-
-    }
-
-}
-
-/* ==========================================================
-   MAIN LOOP
-========================================================== */
-
-function gameLoop(){
-
-    updateGame();
-
-    drawGame();
-
-    animationId =
-        requestAnimationFrame(
-            gameLoop
-        );
-
-}
-
-/* ==========================================================
-   START GAME
-========================================================== */
-
-function startGame(){
-
-    if(!currentUser)
-        return;
-
-    resizeCanvas();
-
-    gameState="PLAYING";
-
-    paused=false;
-
-    score=0;
-
-    coins=0;
-
-    lives=3;
-
-    bullets=[];
-
-    enemies=[];
-
-    coinObjects=[];
-
-    particles=[];
-
-    spawnTimer=0;
-
-    coinTimer=0;
-
-    difficulty=1;
-
-    player.x=
-        W/2;
-
-    player.y=
-        H-110;
-
-    document.getElementById(
-        "game-ui"
-    ).style.display="flex";
-
-    document.getElementById(
-        "mobile-controls"
-    ).style.display="flex";
-
-    document.getElementById(
-        "pauseButton"
-    ).style.display="block";
-
-    document.getElementById(
-        "gameOver"
-    ).style.display="none";
-
-    updateHUD();
-
-    AudioEngine.init();
-
-    AudioEngine.startMusic();
-
-}
-
-/* ==========================================================
-   LOADING GAME
-========================================================== */
-
-function startLoadingGame(mode){
-
-    gameMode=mode;
-
-    /* Ойын басталар алдында әр жолы толық 10 секунд жүктеледі. */
-    loading(
-        null,
-        showGame
-    );
-
-}
-
-function showGame(){
-
-    document
-        .querySelectorAll(".screen")
-        .forEach(
-            s =>
-            s.classList.remove(
-                "active"
-            )
-        );
-
-    startGame();
-
-}
-
-/* ==========================================================
-   HUD
-========================================================== */
-
-function updateHUD(){
-
-    document.getElementById(
-        "gameScore"
-    ).innerText =
-        score;
-
-    document.getElementById(
-        "gameCoins"
-    ).innerText =
-        coins;
-
-    document.getElementById(
-        "gameLives"
-    ).innerText =
-        lives;
-
-}
-
-/* ==========================================================
-   GAME OVER
-========================================================== */
-
-function endGame(){
-
-    if(
-        gameState!=="PLAYING"
-    )
-        return;
-
-    gameState="GAMEOVER";
-
-    paused=false;
-
-    player.left=false;
-    player.right=false;
-
-    AudioEngine.explosion();
-
-    document.getElementById(
-        "game-ui"
-    ).style.display="none";
-
-    document.getElementById(
-        "mobile-controls"
-    ).style.display="none";
-
-    document.getElementById(
-        "pauseButton"
-    ).style.display="none";
-
-    document.getElementById(
-        "finalScore"
-    ).innerText =
-        score;
-
-    document.getElementById(
-        "finalCoins"
-    ).innerText =
-        coins;
-
-    document.getElementById(
-        "finalMode"
-    ).innerText =
-        gameMode.toUpperCase();
-
-    /*
-     * Монета барлық режимде сақталады.
-     */
-
-    currentUser.coins +=
-        coins;
-
-    /*
-     * Тек Ranked ұпайы рейтингке қосылады.
-     */
-
-    if(
-        gameMode==="ranked"
-    ){
-
-        currentUser.score +=
-            score;
-
-    }
-
-    saveDB();
-
-    document.getElementById(
-        "gameOver"
-    ).style.display="flex";
-
-}
-
-/* ==========================================================
-   STOP GAME
-========================================================== */
-
-function stopGame(){
-
-    gameState="MENU";
-
-    paused=false;
-
-    player.left=false;
-    player.right=false;
-
-    document.getElementById(
-        "game-ui"
-    ).style.display="none";
-
-    document.getElementById(
-        "mobile-controls"
-    ).style.display="none";
-
-    document.getElementById(
-        "pauseButton"
-    ).style.display="none";
-
-}
-
-/* ==========================================================
-   RESTART
-========================================================== */
-
-function restartGame(){
-
-    document.getElementById(
-        "gameOver"
-    ).style.display="none";
-
-    startGame();
-
-}
-
-/* ==========================================================
-   RETURN LOBBY
-========================================================== */
-
-function returnLobby(){
-
-    document.getElementById(
-        "gameOver"
-    ).style.display="none";
-
-    stopGame();
-
-    updateLobby();
-
-    showScreen(
-        "lobby-screen"
-    );
-
-}
-
-/* ==========================================================
-   PAUSE
-========================================================== */
-
-function togglePause(){
-
-    if(
-        gameState!=="PLAYING" &&
-        gameState!=="PAUSED"
-    )
-        return;
-
-    paused =
-        !paused;
-
-    gameState =
-        paused ?
-        "PAUSED" :
-        "PLAYING";
-
-    document.getElementById(
-        "pauseButton"
-    ).innerText =
-        paused ?
-        "▶" :
-        "⏸";
-
-}
-
-/* ==========================================================
-   KEYBOARD
-========================================================== */
-
-window.addEventListener(
-    "keydown",
-    e=>{
-
-        if(
-            e.code==="ArrowLeft" ||
-            e.code==="KeyA"
-        ){
-
-            player.left=true;
-
-        }
-
-        if(
-            e.code==="ArrowRight" ||
-            e.code==="KeyD"
-        ){
-
-            player.right=true;
-
-        }
-
-        if(
-            e.code==="Space"
-        ){
-
-            e.preventDefault();
-
-            shoot();
-
-        }
-
-        if(
-            e.code==="Escape"
-        ){
-
-            togglePause();
-
-        }
-
-    }
+let timer=null;
+
+const total=
+scenes.reduce(
+  (a,s)=>a+Number(s.dataset.time),
+  0
 );
 
-window.addEventListener(
-    "keyup",
-    e=>{
 
-        if(
-            e.code==="ArrowLeft" ||
-            e.code==="KeyA"
-        ){
+function animateScene(i){
 
-            player.left=false;
-
-        }
-
-        if(
-            e.code==="ArrowRight" ||
-            e.code==="KeyD"
-        ){
-
-            player.right=false;
-
-        }
-
+  scenes.forEach(
+    (s,n)=>{
+      s.classList.toggle(
+        'active',
+        n===i
+      );
     }
-);
+  );
 
-/* ==========================================================
-   MOBILE CONTROLS
-========================================================== */
+  if(i===3)
+    count('c57',57);
 
-function holdButton(
-    element,
-    direction
-){
+  if(i===4){
 
-    element.addEventListener(
-        "pointerdown",
-        e=>{
+    const p=
+    document.getElementById('people');
 
-            e.preventDefault();
+    p.innerHTML='';
 
-            if(
-                direction==="left"
-            )
-                player.left=true;
+    for(let n=0;n<57;n++){
 
-            if(
-                direction==="right"
-            )
-                player.right=true;
+      const x=
+      document.createElement('span');
 
-            if(
-                direction==="fire"
-            )
-                shoot();
+      x.className='person';
 
-        }
+      x.textContent='●';
+
+      x.style.opacity=
+      n<39?'1':'.16';
+
+      p.appendChild(x);
+    }
+  }
+
+  if(i===5)
+    count('c19',19);
+}
+
+
+function count(id,target){
+
+  const el=
+  document.getElementById(id);
+
+  if(!el)return;
+
+  let n=0;
+
+  const step=
+  Math.max(
+    1,
+    Math.ceil(target/24)
+  );
+
+  const t=
+  setInterval(()=>{
+
+    n=
+    Math.min(
+      target,
+      n+step
     );
 
-    const release=()=>{
+    el.textContent=n;
 
-        if(
-            direction==="left"
+    if(n>=target)
+      clearInterval(t);
+
+  },55);
+}
+
+
+function next(){
+
+  if(index<scenes.length-1){
+
+    index++;
+
+    elapsed=0;
+
+    animateScene(index);
+
+    updateBar();
+
+  }else{
+
+    clearInterval(timer);
+
+    paused=true;
+
+    document.getElementById(
+      'pause'
+    ).textContent=
+    '▶ Қайта ойнату';
+  }
+}
+
+
+function back(){
+
+  if(index>0){
+
+    index--;
+
+    elapsed=0;
+
+    paused=false;
+
+    document.getElementById(
+      'pause'
+    ).textContent=
+    'Ⅱ Пауза';
+
+    animateScene(index);
+
+    updateBar();
+  }
+}
+
+
+function skip(){
+
+  if(index<scenes.length-1){
+
+    index++;
+
+    elapsed=0;
+
+    animateScene(index);
+
+    updateBar();
+
+  }else{
+
+    index=0;
+
+    elapsed=0;
+
+    paused=false;
+
+    document.getElementById(
+      'pause'
+    ).textContent=
+    'Ⅱ Пауза';
+
+    animateScene(0);
+
+    updateBar();
+  }
+}
+
+
+function updateBar(){
+
+  const before=
+  scenes
+  .slice(0,index)
+  .reduce(
+    (a,s)=>a+Number(s.dataset.time),
+    0
+  );
+
+  bar.style.width=
+  Math.min(
+    100,
+    (
+      before+
+      Math.min(
+        elapsed,
+        Number(
+          scenes[index].dataset.time
         )
-            player.left=false;
-
-        if(
-            direction==="right"
-        )
-            player.right=false;
-
-    };
-
-    element.addEventListener(
-        "pointerup",
-        release
-    );
-
-    element.addEventListener(
-        "pointercancel",
-        release
-    );
-
-    element.addEventListener(
-        "pointerleave",
-        release
-    );
-
+      )
+    )/total*100
+  )+'%';
 }
 
-holdButton(
-    document.getElementById(
-        "leftBtn"
-    ),
-    "left"
-);
 
-holdButton(
-    document.getElementById(
-        "rightBtn"
-    ),
-    "right"
-);
+function tick(){
 
-holdButton(
-    document.getElementById(
-        "fireBtn"
-    ),
-    "fire"
-);
+  if(paused)return;
 
-/* ==========================================================
-   INITIALIZATION
-========================================================== */
+  elapsed+=.1;
 
-resizeCanvas();
+  updateBar();
 
-createStars();
+  if(
+    elapsed>=
+    Number(
+      scenes[index].dataset.time
+    )
+  ){
 
-updateSettings();
+    elapsed=0;
 
-const savedUser =
-    localStorage.getItem(
-        "cyberGlideCurrentUser"
-    );
-
-if(
-    savedUser &&
-    db[savedUser]
-){
-
-    currentUser =
-        db[savedUser];
-
-    updateLobby();
-
-    /* Сақталған аккаунтпен қайта кіргенде де 10 секундтық loading. */
-    loading(
-        "lobby-screen"
-    );
-
-}else{
-
-    showScreen(
-        "welcome-screen"
-    );
-
+    next();
+  }
 }
 
-/* Бір ғана негізгі animation loop */
 
-if(!animationId){
+function restart(){
 
-    animationId =
-        requestAnimationFrame(
-            gameLoop
-        );
+  clearInterval(timer);
 
+  index=0;
+
+  elapsed=0;
+
+  paused=false;
+
+  bar.style.width='0%';
+
+  document.getElementById(
+    'pause'
+  ).textContent=
+  'Ⅱ Пауза';
+
+  animateScene(0);
+
+  timer=
+  setInterval(
+    tick,
+    100
+  );
 }
 
-/* Барлық батырмаға дыбыс */
+
+document.getElementById(
+  'restart'
+).onclick=restart;
+
+
+document.getElementById(
+  'back'
+).onclick=back;
+
+
+document.getElementById(
+  'next'
+).onclick=next;
+
+
+document.getElementById(
+  'skip'
+).onclick=skip;
+
+
+/* ==========================
+   ТІРКЕЛУ ТЕРЕЗЕСІ
+========================== */
+
+function showRegister(){
+
+  document
+  .getElementById(
+    'registerModal'
+  )
+  .classList.add('show');
+}
+
+
+function closeRegister(){
+
+  document
+  .getElementById(
+    'registerModal'
+  )
+  .classList.remove('show');
+}
+
+
+document
+.getElementById(
+  'registerModal'
+)
+.addEventListener(
+  'click',
+  e=>{
+
+    if(
+      e.target.id===
+      'registerModal'
+    )
+      closeRegister();
+
+  }
+);
+
+
+/* ==========================
+   MUSIC
+========================== */
+
+let audioCtx=null;
+let musicTimer=null;
+let musicOn=true;
+
+const notes=[
+  523.25,
+  659.25,
+  783.99,
+  659.25,
+  587.33,
+  698.46,
+  880,
+  698.46
+];
+
+
+function startMusic(){
+
+  if(!musicOn)return;
+
+  if(!audioCtx){
+
+    audioCtx=
+    new (
+      window.AudioContext||
+      window.webkitAudioContext
+    )();
+  }
+
+  if(
+    audioCtx.state===
+    'suspended'
+  )
+    audioCtx.resume();
+
+  if(musicTimer)return;
+
+  let i=0;
+
+  musicTimer=
+  setInterval(()=>{
+
+    if(!musicOn)return;
+
+    const o=
+    audioCtx.createOscillator();
+
+    const g=
+    audioCtx.createGain();
+
+    o.type='sine';
+
+    o.frequency.value=
+    notes[
+      i++%notes.length
+    ];
+
+    g.gain.setValueAtTime(
+      .0001,
+      audioCtx.currentTime
+    );
+
+    g.gain.exponentialRampToValueAtTime(
+      .045,
+      audioCtx.currentTime+.025
+    );
+
+    g.gain.exponentialRampToValueAtTime(
+      .0001,
+      audioCtx.currentTime+.22
+    );
+
+    o.connect(g);
+
+    g.connect(
+      audioCtx.destination
+    );
+
+    o.start();
+
+    o.stop(
+      audioCtx.currentTime+.24
+    );
+
+  },260);
+}
+
+
+document.getElementById(
+  'musicBtn'
+).onclick=()=>{
+
+  musicOn=!musicOn;
+
+  document.getElementById(
+    'musicBtn'
+  ).textContent=
+  musicOn
+  ?'🔊 Әуенді өшіру'
+  :'🔇 Әуенді қосу';
+
+  if(musicOn)
+    startMusic();
+};
+
 
 document.addEventListener(
-    "click",
-    e=>{
+  'click',
+  ()=>startMusic(),
+  {once:true}
+);
 
-        if(
-            e.target.closest(
-                ".btn"
-            )
-        ){
 
-            AudioEngine.click();
+/* ==========================
+   PAUSE
+========================== */
 
-        }
+document.getElementById(
+  'pause'
+).onclick=()=>{
 
-    }
+  paused=!paused;
+
+  document.getElementById(
+    'pause'
+  ).textContent=
+  paused
+  ?'▶ Жалғастыру'
+  :'Ⅱ Пауза';
+
+  if(
+    !paused &&
+    index===scenes.length-1
+  )
+    restart();
+};
+
+
+/* ==========================
+   БАСТАУ
+========================== */
+
+animateScene(0);
+
+timer=
+setInterval(
+  tick,
+  100
 );
 
 </script>
